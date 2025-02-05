@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <vector>
+#include <functional>
 
 enum class LogType
 {
@@ -14,9 +15,11 @@ class Logger {
 public:
     static void Log(LogType type, const std::string& content);
     static void WriteLogsToFile();
+    static void DefineOnMessageLogged(const std::function<void(LogType type, const std::string& content)>& onLogFunc) { m_onMessageLogged = onLogFunc; }
 
 private:
     inline static std::vector<std::string> m_logMessages;
+    inline static std::function<void(LogType type, const std::string& content)> m_onMessageLogged;
 };
 
 #define LOG(type, content) Logger::Log(LogType::type, content)

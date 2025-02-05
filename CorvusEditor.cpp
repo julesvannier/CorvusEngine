@@ -23,6 +23,11 @@ CorvusEditor::CorvusEditor()
 {
     LOG(Debug, "Starting Corvus Editor");
 
+    Logger::DefineOnMessageLogged([this](LogType type, const std::string& content)
+    {
+        m_loggedMessages.emplace_back(std::make_tuple(type, content));
+    });
+
     InputSystem::Create();
     InputSystem::Get()->AddListener(this);
     InputSystem::Get()->ShowCursor(false);
@@ -460,6 +465,31 @@ void CorvusEditor::RenderUI(float width, float height)
         ImGui::Checkbox("Enable SkyBox", &m_enableSkyBox);
         ImGui::Checkbox("Enable Shadows", &m_enableShadows);
         ImGui::Checkbox("Enable SSAO", &m_enableSSAO);
+        ImGui::End();
+
+        ImGui::Begin("Log");
+        ImGui::Separator();
+        if (ImGui::BeginChild("scrolling", ImVec2(0, 0), ImGuiChildFlags_None, ImGuiWindowFlags_HorizontalScrollbar))
+        {
+            for (const auto& [type, message] : m_loggedMessages)
+            {
+                switch (type)
+                {
+                    case LogType::Debug:
+                        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), message.c_str());
+                        break;
+                    case LogType::Warning:
+                        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), message.c_str());
+                        break;
+                    case LogType::Error:
+                        ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), message.c_str());
+                        break;
+                }
+            }
+            if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+                ImGui::SetScrollHereY(1.0f);
+            ImGui::EndChild();
+        }
         ImGui::End();
 
         ImGui::Begin("Debug Point Lights");

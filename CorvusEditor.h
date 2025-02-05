@@ -64,6 +64,8 @@ private:
     std::unordered_map<std::string, std::shared_ptr<Buffer>> m_meshesInstancesBuffers;
     std::unordered_map<std::string, int> m_meshesInstancesCount;
 
+    std::vector<std::tuple<LogType, std::string>> m_loggedMessages;
+
     float m_startTime;
     float m_lastTime;
     float m_elapsedTime;
@@ -89,7 +91,7 @@ private:
 
     int m_shadowMapResolution = 2048;
     bool m_enableShadows = true;
-    bool m_enableSSAO = true;
+    bool m_enableSSAO = false;
     bool m_enableSkyBox = true;
     bool m_enablePointLights = false;
     bool m_movePointLights = false;
