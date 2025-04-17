@@ -21,9 +21,10 @@ public:
     CorvusEditor();
     ~CorvusEditor();
 
-    std::shared_ptr<RenderItem> AddModelToScene(std::string name, const std::string& modelPath, const std::string& albedoPath, const std::string& normalPath, const std::string& mrPath,
+    std::shared_ptr<GameObject> AddModelToScene(std::string name, const std::string& modelPath, const std::string& albedoPath, const std::string& normalPath, const std::string& mrPath,
         DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 rotation = { 0.0f, 0.0f, 0.0f }, DirectX::XMFLOAT3 scale = { 1.0f, 1.0f, 1.0f }, bool transparent = false);
-    void AddLightToScene(DirectX::XMFLOAT3 position, DirectX::XMFLOAT4 color = { 1.0f, 1.0f, 1.0f, 1.0f }, bool randomColor = false);
+    void RemoveModelFromScene(std::shared_ptr<GameObject> goToRemove);
+    std::shared_ptr<GameObject> AddLightToScene(DirectX::XMFLOAT3 position, DirectX::XMFLOAT4 color = { 1.0f, 1.0f, 1.0f, 1.0f }, bool randomColor = false);
     void RenderUI(float width, float height);
     void Run();
 

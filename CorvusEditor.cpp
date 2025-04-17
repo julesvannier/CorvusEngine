@@ -312,7 +312,7 @@ void CorvusEditor::Run()
     }
 }
 
-std::shared_ptr<RenderItem> CorvusEditor::AddModelToScene(std::string name, const std::string& modelPath, const std::string& albedoPath, const std::string& normalPath,
+std::shared_ptr<GameObject> CorvusEditor::AddModelToScene(std::string name, const std::string& modelPath, const std::string& albedoPath, const std::string& normalPath,
     const std::string& mrPath, DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 rotation, DirectX::XMFLOAT3 scale, bool transparent)
 {
     auto model = m_resourceManager->LoadMesh(modelPath);
@@ -361,10 +361,15 @@ std::shared_ptr<RenderItem> CorvusEditor::AddModelToScene(std::string name, cons
     auto meshComp = go->AddComponent<MeshComponent>();
     meshComp->SetRenderItem(model);
     
-    return model;
+    return go;
 }
 
-void CorvusEditor::AddLightToScene(DirectX::XMFLOAT3 position, DirectX::XMFLOAT4 color, bool randomColor)
+void CorvusEditor::RemoveModelFromScene(std::shared_ptr<GameObject> goToRemove)
+{
+    m_scene->RemoveGameObject(goToRemove);
+}
+
+std::shared_ptr<GameObject> CorvusEditor::AddLightToScene(DirectX::XMFLOAT3 position, DirectX::XMFLOAT4 color, bool randomColor)
 {
     auto RandFloatRange = [](float min, float max) -> float
     {
@@ -387,6 +392,8 @@ void CorvusEditor::AddLightToScene(DirectX::XMFLOAT3 position, DirectX::XMFLOAT4
     auto go = m_scene->CreateGameObject("PointLight", position);
     auto lightComp = go->AddComponent<PointLightComponent>();
     lightComp->m_pointLight = pointLight;
+
+    return go;
 }
 
 void CorvusEditor::RenderUI(float width, float height)
@@ -549,8 +556,33 @@ void CorvusEditor::RenderUI(float width, float height)
                     if (ImGui::RadioButton("World", m_gizmoMode == ImGuizmo::WORLD))
                         m_gizmoMode = ImGuizmo::WORLD;
                 }
+                
+                if (ImGui::Button("Delete"))
+                {
+                    RemoveModelFromScene(m_selectedGo);
+                    m_selectedGo.reset();
+                }
             }
         }
+        ImGui::Separator();
+        if (ImGui::Button("Add Cube"))
+        {
+            auto go = AddModelToScene("Cube", "Assets/cube.obj", "", "", "",
+                { 0.0f, 0.f, 0.0f }, {}, { 1.0f, 1.0f, 1.0f });
+            m_selectedGo = go;
+        }
+        if (ImGui::Button("Add Dragon"))
+        {
+            auto go = AddModelToScene("Dragon", "Assets/dragon.obj", "", "", "",
+            { 0.0f, 0.0f, 0.0f }, {}, { 0.25f, 0.25f, 0.25f });
+            m_selectedGo = go;
+        }
+        if (ImGui::Button("Add Light"))
+        {
+            auto go = AddLightToScene({ 0.0f, 1.0f, 0.0f }, {}, true);
+            m_selectedGo = go;
+        }
+        
         ImGui::End();
 
         auto GBuffer = m_GBufferRenderPass->GetGBuffer();
