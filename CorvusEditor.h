@@ -84,19 +84,15 @@ private:
     float m_dirLightDirection[3] = { 1.0f, -1.0f, -1.0f };
     float m_dirLightIntensity = 1.0;
 
-    // TODO remove this
-    float m_testLightConstAttenuation = 0.65f;
-    float m_testLightLinearAttenuation = 0.1f;
-    float m_testLightQuadraticAttenuation = 0.02f;
-    // DirectX::XMFLOAT4 m_testLightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+    float m_defaultLightConstAttenuation = 0.65f;
+    float m_defaultLightLinearAttenuation = 0.1f;
+    float m_defaultLightQuadraticAttenuation = 0.02f;
 
     int m_shadowMapResolution = 2048;
     bool m_enableShadows = true;
-    bool m_enableSSAO = false;
+    bool m_enableSSAO = true;
     bool m_enableSkyBox = true;
     bool m_enablePointLights = false;
-    bool m_movePointLights = false;
-    float m_movePointLightsSpeed = 0.8f;
 
     ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::TRANSLATE;
     ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;

@@ -226,21 +226,6 @@ void CorvusEditor::Run()
         for(auto idRdm : renderMeshesData)
             RMDs.emplace_back(idRdm.second);
         
-        // ------------------------------------------------------------- Lights Update --------------------------------------------------------------------
-        for(auto& pointLight : pointLights)
-        {
-            if(m_movePointLights)
-            {
-                auto pos = pointLight.Position;
-                auto posY = cos(m_elapsedTime * m_movePointLightsSpeed) * 10.0f;
-                pointLight.Position = { pos.x, posY, pos.z };
-            }
-            
-            pointLight.ConstantAttenuation = m_testLightConstAttenuation;
-            pointLight.LinearAttenuation = m_testLightLinearAttenuation;
-            pointLight.QuadraticAttenuation = m_testLightQuadraticAttenuation;
-        }
-
         // --------------------------------------------------------- Global Pass Datas -----------------------------------------------------------------
         std::vector<PointLight> pl = {};
         GlobalPassData passData = {};
@@ -385,9 +370,9 @@ std::shared_ptr<GameObject> CorvusEditor::AddLightToScene(DirectX::XMFLOAT3 posi
         pointLight.Color = { RandFloatRange(0.0f, 1.0f), RandFloatRange(0.0f, 1.0f), RandFloatRange(0.0f, 1.0f), 1.0f };
     else
         pointLight.Color = color;
-    pointLight.ConstantAttenuation = m_testLightConstAttenuation;
-    pointLight.LinearAttenuation = m_testLightLinearAttenuation;
-    pointLight.QuadraticAttenuation = m_testLightQuadraticAttenuation;
+    pointLight.ConstantAttenuation = m_defaultLightConstAttenuation;
+    pointLight.LinearAttenuation = m_defaultLightLinearAttenuation;
+    pointLight.QuadraticAttenuation = m_defaultLightQuadraticAttenuation;
     
     auto go = m_scene->CreateGameObject("PointLight", position);
     auto lightComp = go->AddComponent<PointLightComponent>();
@@ -470,6 +455,7 @@ void CorvusEditor::RenderUI(float width, float height)
         ImGui::SliderFloat("DirLight Intensity", &m_dirLightIntensity, 0.0f, 3.0f);
         ImGui::Separator();
         ImGui::Checkbox("Enable SkyBox", &m_enableSkyBox);
+        ImGui::Checkbox("Enable Point Lights", &m_enablePointLights);
         ImGui::Checkbox("Enable Shadows", &m_enableShadows);
         ImGui::Checkbox("Enable SSAO", &m_enableSSAO);
         ImGui::End();
@@ -499,16 +485,6 @@ void CorvusEditor::RenderUI(float width, float height)
         }
         ImGui::End();
 
-        ImGui::Begin("Debug Point Lights");
-        ImGui::Checkbox("Enable Point Lights", &m_enablePointLights);
-        ImGui::Checkbox("Move", &m_movePointLights);
-        ImGui::Separator();
-        ImGui::SliderFloat("MoveSpeed", &m_movePointLightsSpeed, 0.0f, 8.0f);
-        ImGui::SliderFloat("Constant", &m_testLightConstAttenuation, 0.0f, 1.0f);
-        ImGui::SliderFloat("Linear", &m_testLightLinearAttenuation, 0.0f, 0.5f);
-        ImGui::SliderFloat("Quadratic", &m_testLightQuadraticAttenuation, 0.0f, 0.5f);
-        ImGui::End();
-
         ImGui::Begin("SceneHierarchy");
         if(ImGui::BeginListBox("Objects"))
         {
@@ -531,8 +507,12 @@ void CorvusEditor::RenderUI(float width, float height)
         if(m_selectedGo != nullptr)
         {
             ImGui::Text(m_selectedGo->GetName().c_str());
+            ImGui::Spacing();
             if(auto tfComp = m_selectedGo->GetComponent<TransformComponent>())
             {
+                ImGui::Text("Transform");
+                ImGui::Spacing();
+                
                 float pos[3] = { tfComp->m_transform.m[3][0], tfComp->m_transform.m[3][1], tfComp->m_transform.m[3][2] };
                 ImGui::InputFloat3("Position", pos);
 
@@ -556,12 +536,35 @@ void CorvusEditor::RenderUI(float width, float height)
                     if (ImGui::RadioButton("World", m_gizmoMode == ImGuizmo::WORLD))
                         m_gizmoMode = ImGuizmo::WORLD;
                 }
-                
-                if (ImGui::Button("Delete"))
-                {
-                    RemoveModelFromScene(m_selectedGo);
-                    m_selectedGo.reset();
-                }
+            }
+
+            if (auto lightComp = m_selectedGo->GetComponent<PointLightComponent>())
+            {
+                ImGui::Text("Point Light");
+                ImGui::Spacing();
+
+                float color[4] = { lightComp->m_pointLight.Color.x, lightComp->m_pointLight.Color.y, lightComp->m_pointLight.Color.z, lightComp->m_pointLight.Color.w };
+                ImGui::ColorEdit4("Color", color);
+                lightComp->m_pointLight.Color = { color[0], color[1], color[2], color[3] };
+
+                float constant = lightComp->m_pointLight.ConstantAttenuation;
+                ImGui::SliderFloat("Constant", &constant, 0.0f, 1.0f);
+                lightComp->m_pointLight.ConstantAttenuation = constant;
+
+                float linear = lightComp->m_pointLight.LinearAttenuation;
+                ImGui::SliderFloat("Linear", &linear, 0.0f, 1.0f);
+                lightComp->m_pointLight.LinearAttenuation = linear;
+
+                float quadratic = lightComp->m_pointLight.QuadraticAttenuation;
+                ImGui::SliderFloat("Quadratic", &quadratic, 0.0f, 1.0f);
+                lightComp->m_pointLight.QuadraticAttenuation = quadratic;
+            }
+
+            ImGui::Spacing();
+            if (ImGui::Button("Delete"))
+            {
+                RemoveModelFromScene(m_selectedGo);
+                m_selectedGo.reset();
             }
         }
         ImGui::Separator();
