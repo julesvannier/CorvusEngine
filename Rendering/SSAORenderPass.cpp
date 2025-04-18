@@ -1,4 +1,5 @@
 ﻿#include "SSAORenderPass.h"
+#include "Utilities.h"
 
 void SSAORenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
 {
@@ -10,6 +11,45 @@ void SSAORenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int wid
 
     m_constantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
     renderer->CreateConstantBuffer(m_constantBuffer);
+
+    constexpr int kernelSize = 16;
+    for (int i = 0; i < kernelSize; i++)
+    {
+        m_sampleKernel[i] = DirectX::XMFLOAT3 {
+            Utilities::RandomFloatRange(-1.0f, 1.0f),
+            Utilities::RandomFloatRange(-1.0f, 1.0f),
+            Utilities::RandomFloatRange(0.0f, 1.0f),
+        };
+
+        float scale = float(i) / float(kernelSize);
+        scale = Utilities::Lerp(0.1f, 1.0f, scale * scale);
+        DirectX::XMVECTOR v = DirectX::XMLoadFloat3(&m_sampleKernel[i]);
+        DirectX::XMStoreFloat3(&m_sampleKernel[i], DirectX::XMVectorScale(v, scale));
+
+        /*
+        LOG(Debug, "SSAO Sample Kernel Vector: x = " + std::to_string(m_sampleKernel[i].x) +
+                    ", y = " + std::to_string(m_sampleKernel[i].y) +
+                    ", z = " + std::to_string(m_sampleKernel[i].z));
+        */
+    }
+
+    for (int i = 0; i < 64; i++)
+    {
+        m_noiseTexture[i] = DirectX::XMFLOAT3 {
+            Utilities::RandomFloatRange(-1.0f, 1.0f),
+            Utilities::RandomFloatRange(-1.0f, 1.0f),
+            0.0f,
+        };
+
+        DirectX::XMVECTOR v = DirectX::XMLoadFloat3(&m_noiseTexture[i]);
+        DirectX::XMStoreFloat3(&m_noiseTexture[i], DirectX::XMVector3Normalize(v));
+
+        /*
+        LOG(Debug, "SSAO Noise Texture Vector: x = " + std::to_string(m_noiseTexture[i].x) +
+                    ", y = " + std::to_string(m_noiseTexture[i].y) +
+                    ", z = " + std::to_string(m_noiseTexture[i].z));
+        */
+    }
 
     OnResize(renderer, width, height);
 }
