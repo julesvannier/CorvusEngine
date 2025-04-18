@@ -18,7 +18,8 @@ void SSAORenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int wid
         m_sampleKernel[i] = DirectX::XMFLOAT3 {
             Utilities::RandomFloatRange(-1.0f, 1.0f),
             Utilities::RandomFloatRange(-1.0f, 1.0f),
-            Utilities::RandomFloatRange(0.0f, 1.0f),
+            /* Utilities::RandomFloatRange(0.0f, 1.0f), */
+            100.0f // TODO remove this, debug purposes
         };
 
         float scale = float(i) / float(kernelSize);
@@ -33,21 +34,27 @@ void SSAORenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int wid
         */
     }
 
+    m_sampleKernelBuffer = renderer->CreateBuffer(sizeof(m_sampleKernel), 0, BufferType::Structured, true);
+    void* kernelData;
+    m_sampleKernelBuffer->Map(0, 0, &kernelData);
+    memcpy(kernelData, m_sampleKernel, sizeof(m_sampleKernel));
+    m_sampleKernelBuffer->Unmap(0, 0);
+
     for (int i = 0; i < 64; i++)
     {
-        m_noiseTexture[i] = DirectX::XMFLOAT3 {
+        m_noiseTextureData[i] = DirectX::XMFLOAT3 {
             Utilities::RandomFloatRange(-1.0f, 1.0f),
             Utilities::RandomFloatRange(-1.0f, 1.0f),
             0.0f,
         };
 
-        DirectX::XMVECTOR v = DirectX::XMLoadFloat3(&m_noiseTexture[i]);
-        DirectX::XMStoreFloat3(&m_noiseTexture[i], DirectX::XMVector3Normalize(v));
+        DirectX::XMVECTOR v = DirectX::XMLoadFloat3(&m_noiseTextureData[i]);
+        DirectX::XMStoreFloat3(&m_noiseTextureData[i], DirectX::XMVector3Normalize(v));
 
         /*
-        LOG(Debug, "SSAO Noise Texture Vector: x = " + std::to_string(m_noiseTexture[i].x) +
-                    ", y = " + std::to_string(m_noiseTexture[i].y) +
-                    ", z = " + std::to_string(m_noiseTexture[i].z));
+        LOG(Debug, "SSAO Noise Texture Vector: x = " + std::to_string(m_noiseTextureData[i].x) +
+                    ", y = " + std::to_string(m_noiseTextureData[i].y) +
+                    ", z = " + std::to_string(m_noiseTextureData[i].z));
         */
     }
 
@@ -81,6 +88,7 @@ void SSAORenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const GlobalP
     // commandList->BindComputeConstantBuffer(m_constantBuffer, 1);
     commandList->BindComputeShaderResource(globalPassData.GBuffer.DepthBuffer, 1);
     commandList->BindComputeSampler(m_sampler, 2);
+    commandList->SetComputeShaderResource(m_sampleKernelBuffer, 3);
     
     commandList->Dispatch(m_width / 32, m_height / 32, 6);
     

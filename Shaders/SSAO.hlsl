@@ -1,6 +1,7 @@
 ﻿RWTexture2D<float> OutSSAOTexture : register(u0);
 Texture2D Depth : register(t1);
 SamplerState Sampler : register(s2);
+StructuredBuffer<float3> SampleKernel : register(t3, space1);
 
 // cbuffer CBuf : register(b3)
 // {
@@ -15,6 +16,8 @@ void Main(uint3 ThreadID : SV_DispatchThreadID)
 
     float2 st = ThreadID.xy / float2(depthWidth, depthHeight);
     float2 uv = 2.0 * float2(st.x, st.y) - 1.0;
-    
+
     OutSSAOTexture[ThreadID.xy] = Depth.Sample(Sampler, uv).x;
+
+    OutSSAOTexture[ThreadID.xy] = SampleKernel[0].z;
 }

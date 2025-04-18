@@ -240,6 +240,11 @@ void CommandList::SetGraphicsShaderResource(std::shared_ptr<Buffer> buffer, int 
     m_commandList->SetGraphicsRootShaderResourceView(idx, buffer->GetResource().Resource->GetGPUVirtualAddress());
 }
 
+void CommandList::SetComputeShaderResource(std::shared_ptr<Buffer> buffer, int idx)
+{
+    m_commandList->SetComputeRootShaderResourceView(idx, buffer->GetResource().Resource->GetGPUVirtualAddress());
+}
+
 void CommandList::Draw(int vertexCount, int instanceCount)
 {
     m_commandList->DrawInstanced(vertexCount, instanceCount, 0, 0);

@@ -51,6 +51,7 @@ public:
     void BindGraphicsSampler(std::shared_ptr<Sampler> sampler, int idx);
     void BindComputeSampler(std::shared_ptr<Sampler> sampler, int idx);
     void SetGraphicsShaderResource(std::shared_ptr<Buffer> buffer, int idx);
+    void SetComputeShaderResource(std::shared_ptr<Buffer> buffer, int idx);
     void Draw(int vertexCount, int instanceCount = 1);
     void DrawIndexed(int indexCount, int instanceCount = 1);
     void Dispatch(int x, int y, int z);
