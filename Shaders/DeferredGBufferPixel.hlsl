@@ -13,6 +13,7 @@ struct PixelIn
     bool HasNormalMap : TEXCOORD3;
     bool HasMetallicRoughness : TEXCOORD4;
     row_major float3x3 tbn : TEXCOORD5;
+    uint instanceID : INSTANCE_ID;
 };
 
 struct PixelOut

@@ -5,6 +5,8 @@
 
 #define MAX_INSTANCES 300
 
+#define MAX_TRANSPARENT_OBJECTS 50
+
 struct PointLight
 {
     DirectX::XMFLOAT3 Position;
@@ -43,15 +45,6 @@ struct SceneConstantBuffer
     // 16 bytes boundary
     int ShadowEnabled;
     float Paddin2[3];
-};
-
-struct ObjectConstantBuffer
-{
-    DirectX::XMFLOAT4X4 World;
-    int HasAlbedo = false;
-    int HasNormalMap = false;
-    int IsInstanced = false;
-    int HasMetallicRoughness = false;
 };
 
 struct ScreenQuadVertex

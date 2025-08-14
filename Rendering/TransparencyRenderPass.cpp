@@ -21,8 +21,10 @@ void TransparencyRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer,
     m_depthBuffer = renderer->CreateTexture(width, height, TextureFormat::R32Depth, TextureType::DepthTarget);
     renderer->CreateDepthView(m_depthBuffer);
     
-    m_constantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
-    renderer->CreateConstantBuffer(m_constantBuffer);
+    m_sceneConstantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
+    renderer->CreateConstantBuffer(m_sceneConstantBuffer);
+
+    m_opacityValuesBuffer = renderer->CreateBuffer(sizeof(float) * MAX_TRANSPARENT_OBJECTS, sizeof(float), BufferType::Structured, false);
 }
 
 void TransparencyRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
@@ -54,9 +56,9 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
     cbuf.ShadowEnabled = globalPassData.EnableShadows;
         
     void* data;
-    m_constantBuffer->Map(0, 0, &data);
+    m_sceneConstantBuffer->Map(0, 0, &data);
     memcpy(data, &cbuf, sizeof(SceneConstantBuffer));
-    m_constantBuffer->Unmap(0, 0);
+    m_sceneConstantBuffer->Unmap(0, 0);
 
     auto commandList = renderer->GetCurrentCommandList();
     
@@ -64,8 +66,27 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
     commandList->BindGraphicsPipeline(m_forwardTransparencyPipeline);
     commandList->ImageBarrier(renderTargetInfo.RenderTexture, D3D12_RESOURCE_STATE_RENDER_TARGET);
     commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer);
-    commandList->BindGraphicsConstantBuffer(m_constantBuffer, 0);
+    commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
     // commandList->BindGraphicsSampler(m_textureSampler, 2);
+
+    // Prepass to list all Opacity values
+    std::vector<float> opacityData;
+    for (const auto renderMeshData : renderMeshesData)
+    {
+        auto& material = renderMeshData.Material;
+
+        if (!material.IsTransparent)
+            continue;
+
+        opacityData.emplace_back(material.Opacity);
+    }
+
+    void* opacityDt;
+    m_opacityValuesBuffer->Map(0, 0, &opacityDt);
+    memcpy(opacityDt, opacityData.data(), sizeof(InstanceData) * renderMeshesData.size());
+    m_opacityValuesBuffer->Unmap(0, 0);
+    
+    commandList->SetGraphicsShaderResource(m_opacityValuesBuffer, 2);
 
     for(const auto renderMeshData : renderMeshesData)
     {

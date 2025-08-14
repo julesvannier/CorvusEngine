@@ -15,6 +15,7 @@ struct Material
     bool HasMetallicRoughness = false;
     std::shared_ptr<Texture> MetallicRoughness;
     bool IsTransparent = false;
+    float Opacity = 0.5f;
 };
 
 struct Vertex

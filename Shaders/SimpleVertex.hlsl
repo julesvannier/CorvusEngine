@@ -42,6 +42,7 @@ struct VertexOut
     bool HasNormalMap : TEXCOORD3;
     bool HasMetallicRoughness : TEXCOORD4;
     row_major float3x3 tbn : TEXCOORD5;
+    uint instanceID : INSTANCE_ID;
 };
 
 VertexOut Main(VertexIn Input, uint InstanceID : SV_InstanceID)
@@ -60,6 +61,8 @@ VertexOut Main(VertexIn Input, uint InstanceID : SV_InstanceID)
     Output.HasAlbedo = instanceData.HasAlbedo;
     Output.HasNormalMap = instanceData.HasNormalMap;
     Output.HasMetallicRoughness = instanceData.HasMetallicRoughness;
+    
+    Output.instanceID = InstanceID;
 
     return Output;
 }

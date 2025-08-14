@@ -13,10 +13,13 @@ struct PixelIn
     bool HasNormalMap : TEXCOORD3;
     bool HasMetallicRoughness : TEXCOORD4;
     row_major float3x3 tbn : TEXCOORD5;
+    uint instanceID : INSTANCE_ID;
 };
+
+StructuredBuffer<float> OpacityData : register(t2, space2);
 
 float4 Main(PixelIn Input) : SV_Target
 {
     // safety Yellow
-    return float4(255.0f, 240.0f, 0.0f, 0.6f);
+    return float4(255.0f, 240.0f, 0.0f, OpacityData[Input.instanceID]);
 }
