@@ -109,6 +109,9 @@ void GBufferRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Glob
     {
         auto& material = renderMeshData.Material;
 
+        if (material.IsTransparent)
+            continue;
+
         std::vector<InstanceData> instancesData;
         for(auto instanceTransform : renderMeshData.InstancesTransforms)
         {

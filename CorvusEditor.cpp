@@ -61,6 +61,9 @@ CorvusEditor::CorvusEditor()
     m_skyboxPass = std::make_shared<SkyBoxRenderPass>();
     m_skyboxPass->Initialize(m_renderer, defaultWidth, defaultHeight);
 
+    m_transparencyPass = std::make_shared<TransparencyRenderPass>();
+    m_transparencyPass->Initialize(m_renderer, defaultWidth, defaultHeight);
+
     m_sceneRenderTexture = m_renderer->CreateTexture(defaultWidth, defaultHeight, TextureFormat::RGBA8, TextureType::RenderTarget);
     m_renderer->CreateRenderTargetView(m_sceneRenderTexture);
     m_renderer->CreateShaderResourceView(m_sceneRenderTexture);
@@ -89,6 +92,9 @@ CorvusEditor::CorvusEditor()
 
         AddModelToScene("Dragon", "Assets/dragon.obj", "", "", "",
             { -10.2f, -0.9f, 0.0f }, {}, { 0.25f, 0.25f, 0.25f });
+
+        AddModelToScene("Sphere", "Assets/sphere.gltf", "", "", "",
+            { -13.5f, 0.0f, 0.0f }, {}, { 1.0f, 1.0f, 1.0f }, true);
 
         AddModelToScene("Cube", "Assets/cube.obj", "", "", "",
             { -5.0f, -2.25f, 0.0f }, {}, { 12.0f, 0.5f, 6.8f });
@@ -196,6 +202,9 @@ void CorvusEditor::Run()
                 {
                     auto renderItem = meshComp->GetRenderItem();
 
+                    if (renderItem->GetMaterial().IsTransparent && !m_renderTransparentObjects)
+                        continue;
+
                     auto idRmd = renderMeshesData.find(renderItem->GetMeshIdentifier());
                     if(idRmd != renderMeshesData.end()) // RMD already exists for this mesh, let's add the transform only
                     {
@@ -277,6 +286,12 @@ void CorvusEditor::Run()
             m_skyboxPass->Pass(m_renderer, passData, m_camera, {}, rtInfo);
         }
 
+        if (m_renderTransparentObjects)
+        {
+            rtInfo.DepthBuffer = m_GBufferRenderPass->GetGBuffer().DepthBuffer;
+            m_transparencyPass->Pass(m_renderer, passData, m_camera, RMDs, rtInfo);
+        }
+
         // ------------------------------------------------------------- UI Rendering --------------------------------------------------------------------
         
         commandList->BindRenderTargets({ backbuffer }, nullptr);
@@ -327,6 +342,8 @@ std::shared_ptr<GameObject> CorvusEditor::AddModelToScene(std::string name, cons
         model->GetMaterial().HasMetallicRoughness = true;
         model->GetMaterial().MetallicRoughness = mrTexture;
     }
+
+    model->GetMaterial().IsTransparent = transparent;
 
     if(uploader.HasCommands())
         m_renderer->FlushUploader(uploader);
@@ -458,6 +475,7 @@ void CorvusEditor::RenderUI(float width, float height)
         ImGui::Checkbox("Enable Point Lights", &m_enablePointLights);
         ImGui::Checkbox("Enable Shadows", &m_enableShadows);
         ImGui::Checkbox("Enable SSAO", &m_enableSSAO);
+        ImGui::Checkbox("Translucancy pass", &m_renderTransparentObjects);
         ImGui::End();
 
         ImGui::Begin("Log");
@@ -627,6 +645,7 @@ void CorvusEditor::RenderUI(float width, float height)
             m_SSAORenderPass->OnResize(m_renderer, m_viewportCachedSize.x / 2, m_viewportCachedSize.y / 2);
             m_deferredLightingPass->OnResize(m_renderer, m_viewportCachedSize.x, m_viewportCachedSize.y);
             m_skyboxPass->OnResize(m_renderer, m_viewportCachedSize.x, m_viewportCachedSize.y);
+            m_transparencyPass->OnResize(m_renderer, m_viewportCachedSize.x, m_viewportCachedSize.y);
             UpdateProjMatrix(m_viewportCachedSize.x, m_viewportCachedSize.y);
         }
 

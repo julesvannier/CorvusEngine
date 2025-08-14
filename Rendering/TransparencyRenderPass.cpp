@@ -14,7 +14,7 @@ void TransparencyRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer,
     specs.Cull = CullMode::Back;
     specs.Fill = FillMode::Solid;
     ShaderCompiler::CompileShader("Shaders/SimpleVertex.hlsl", ShaderType::Vertex, specs.ShadersBytecodes[ShaderType::Vertex]);
-    ShaderCompiler::CompileShader("Shaders/SimplePixel.hlsl", ShaderType::Pixel, specs.ShadersBytecodes[ShaderType::Pixel]);
+    ShaderCompiler::CompileShader("Shaders/TransparentPixel.hlsl", ShaderType::Pixel, specs.ShadersBytecodes[ShaderType::Pixel]);
 
     m_forwardTransparencyPipeline = renderer->CreateGraphicsPipeline(specs);
 
@@ -60,22 +60,22 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
     commandList->BindGraphicsConstantBuffer(m_constantBuffer, 0);
     commandList->BindGraphicsSampler(m_textureSampler, 2);
 
-    // for(const auto renderItem : renderItems)
-    // {
-    //     auto& material = renderItem->GetMaterial();
-    //
-    //     if(material.HasAlbedo)
-    //         commandList->BindGraphicsShaderResource(material.Albedo, 3);
-    //
-    //     if(material.HasNormal)
-    //         commandList->BindGraphicsShaderResource(material.Normal, 4);
-    //         
-    //     const auto primitives = renderItem->GetPrimitives();
-    //     for(const auto& primitive : primitives)
-    //     {
-    //         commandList->BindVertexBuffer(primitive.m_vertexBuffer);
-    //         commandList->BindIndexBuffer(primitive.m_indicesBuffer);
-    //         commandList->DrawIndexed(primitive.m_indexCount);
-    //     }
-    // }
+    for(const auto renderMeshData : renderMeshesData)
+    {
+        auto& material = renderMeshData.Material;
+        
+        if(material.HasAlbedo)
+            commandList->BindGraphicsShaderResource(material.Albedo, 3);
+    
+        if(material.HasNormal)
+            commandList->BindGraphicsShaderResource(material.Normal, 4);
+            
+        const auto primitives = renderMeshData.Primitives;
+        for(const auto& primitive : primitives)
+        {
+            commandList->BindVertexBuffer(primitive.m_vertexBuffer);
+            commandList->BindIndexBuffer(primitive.m_indicesBuffer);
+            commandList->DrawIndexed(primitive.m_indexCount);
+        }
+    }
 }

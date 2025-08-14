@@ -90,9 +90,10 @@ private:
 
     int m_shadowMapResolution = 2048;
     bool m_enableShadows = true;
-    bool m_enableSSAO = true;
+    bool m_enableSSAO = false;
     bool m_enableSkyBox = true;
     bool m_enablePointLights = false;
+    bool m_renderTransparentObjects = false;
 
     ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::TRANSLATE;
     ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;
