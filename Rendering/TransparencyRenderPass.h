@@ -13,5 +13,6 @@ private:
     std::shared_ptr<Buffer> m_sceneConstantBuffer;
     std::shared_ptr<Texture> m_depthBuffer;
     std::shared_ptr<Sampler> m_textureSampler;
+    std::shared_ptr<Sampler> m_comparisonSampler;
     std::shared_ptr<Buffer> m_opacityValuesBuffer;
 };

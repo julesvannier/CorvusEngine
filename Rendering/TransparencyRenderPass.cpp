@@ -3,6 +3,7 @@
 void TransparencyRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
 {
     m_textureSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
+    m_comparisonSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
 
     GraphicsPipelineSpecs specs;
     specs.FormatCount = 1;
@@ -85,6 +86,13 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
     commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer);
     commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
     commandList->BindGraphicsSampler(m_textureSampler, 3);
+    commandList->BindGraphicsShaderResource(globalPassData.IrradianceMap, 7);
+    commandList->BindGraphicsShaderResource(globalPassData.PrefilterEnvMap, 8);
+    if(globalPassData.EnableShadows)
+    {
+        commandList->BindGraphicsShaderResource(globalPassData.ShadowMap.DepthBuffer, 9);
+        commandList->BindGraphicsSampler(m_comparisonSampler, 9);
+    }
 
     void* opacityDt;
     m_opacityValuesBuffer->Map(0, 0, &opacityDt);
@@ -121,11 +129,11 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
         if(material.HasAlbedo)
             commandList->BindGraphicsShaderResource(material.Albedo, 4);
         
-        // if(material.HasNormal)
-        //     commandList->BindGraphicsShaderResource(material.Normal, 3);
-        //
-        // if(material.HasMetallicRoughness)
-        //     commandList->BindGraphicsShaderResource(material.MetallicRoughness, 4);
+        if(material.HasNormal)
+            commandList->BindGraphicsShaderResource(material.Normal, 5);
+        
+        if(material.HasMetallicRoughness)
+            commandList->BindGraphicsShaderResource(material.MetallicRoughness, 6);
             
         const auto primitives = renderMeshData.Primitives;
         for(const auto& primitive : primitives)
