@@ -1,7 +1,7 @@
-﻿SamplerState Sampler : register(s1);
-Texture2D Albedo : register(t2);
-Texture2D Normal : register(t3);
-Texture2D MetallicRoughness : register(t4);
+﻿SamplerState Sampler : register(s2);
+Texture2D Albedo : register(t3);
+Texture2D Normal : register(t4);
+Texture2D MetallicRoughness : register(t5);
 
 struct PixelIn
 {

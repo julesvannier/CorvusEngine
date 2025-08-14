@@ -36,6 +36,7 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
 {
     auto view = camera.GetViewMatrix();
     auto proj = camera.GetProjMatrix();
+    auto invViewProj = camera.GetInvViewProjMatrix();
 
     DirectX::XMMATRIX viewProj = view * proj;
     
@@ -43,7 +44,14 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
     cbuf.Time = globalPassData.ElapsedTime;
     cbuf.CameraPosition = camera.GetPosition();
     cbuf.Mode = globalPassData.ViewMode;
-    DirectX::XMStoreFloat4x4(&cbuf.ViewProj, DirectX::XMMatrixTranspose(viewProj));
+    cbuf.DirLightDirection = globalPassData.DirectionalInfo.Direction;
+    cbuf.DirLightIntensity = globalPassData.DirectionalInfo.Intensity;
+    cbuf.ScreenDimensions[0] = globalPassData.ViewportSizeX;
+    cbuf.ScreenDimensions[1] = globalPassData.ViewportSizeY;
+    DirectX::XMStoreFloat4x4(&cbuf.ViewProj, viewProj);
+    DirectX::XMStoreFloat4x4(&cbuf.InvViewProj, invViewProj);
+    cbuf.ShadowTransform = globalPassData.ShadowMap.ShadowTransform;
+    cbuf.ShadowEnabled = globalPassData.EnableShadows;
         
     void* data;
     m_constantBuffer->Map(0, 0, &data);
@@ -51,31 +59,56 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
     m_constantBuffer->Unmap(0, 0);
 
     auto commandList = renderer->GetCurrentCommandList();
-    auto backbuffer = renderer->GetBackBuffer();
     
     commandList->SetTopology(Topology::TriangleList);
     commandList->BindGraphicsPipeline(m_forwardTransparencyPipeline);
-    commandList->BindRenderTargets({ backbuffer }, m_depthBuffer);
-    commandList->ClearDepthTarget(m_depthBuffer);
+    commandList->ImageBarrier(renderTargetInfo.RenderTexture, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer);
     commandList->BindGraphicsConstantBuffer(m_constantBuffer, 0);
-    commandList->BindGraphicsSampler(m_textureSampler, 2);
+    // commandList->BindGraphicsSampler(m_textureSampler, 2);
 
     for(const auto renderMeshData : renderMeshesData)
     {
         auto& material = renderMeshData.Material;
-        
-        if(material.HasAlbedo)
-            commandList->BindGraphicsShaderResource(material.Albedo, 3);
-    
-        if(material.HasNormal)
-            commandList->BindGraphicsShaderResource(material.Normal, 4);
+
+        if (!material.IsTransparent)
+            continue;
+
+        std::vector<InstanceData> instancesData;
+        for(auto instanceTransform : renderMeshData.InstancesTransforms)
+        {
+            InstanceData instanceData;
+            instanceData.WorldMat = instanceTransform;
+            instanceData.HasAlbedo = material.HasAlbedo;
+            instanceData.HasNormalMap = material.HasNormal;
+            instanceData.HasMetallicRoughness = material.HasMetallicRoughness;
+            instancesData.emplace_back(instanceData);
+        }
+
+        void* dt;
+        renderMeshData.InstancesDataBuffer->Map(0, 0, &dt);
+        memcpy(dt, instancesData.data(), sizeof(InstanceData) * renderMeshData.InstancesTransforms.size());
+        renderMeshData.InstancesDataBuffer->Unmap(0, 0);
+
+        commandList->SetGraphicsShaderResource(renderMeshData.InstancesDataBuffer, 1);
+
+        // if(material.HasAlbedo)
+        //     commandList->BindGraphicsShaderResource(material.Albedo, 2);
+        //
+        // if(material.HasNormal)
+        //     commandList->BindGraphicsShaderResource(material.Normal, 3);
+        //
+        // if(material.HasMetallicRoughness)
+        //     commandList->BindGraphicsShaderResource(material.MetallicRoughness, 4);
             
         const auto primitives = renderMeshData.Primitives;
         for(const auto& primitive : primitives)
         {
             commandList->BindVertexBuffer(primitive.m_vertexBuffer);
             commandList->BindIndexBuffer(primitive.m_indicesBuffer);
-            commandList->DrawIndexed(primitive.m_indexCount);
+            commandList->DrawIndexed(primitive.m_indexCount, renderMeshData.InstancesTransforms.size());
         }
     }
+
+    commandList->ImageBarrier(renderTargetInfo.RenderTexture, D3D12_RESOURCE_STATE_GENERIC_READ);
 }

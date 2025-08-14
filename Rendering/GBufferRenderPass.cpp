@@ -103,7 +103,7 @@ void GBufferRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Glob
     commandList->SetTopology(Topology::TriangleList);
     commandList->BindGraphicsPipeline(m_deferredGeometryPipeline);
     commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
-    commandList->BindGraphicsSampler(m_textureSampler, 1);
+    commandList->BindGraphicsSampler(m_textureSampler, 2);
 
     for(const auto renderMeshData : renderMeshesData)
     {
@@ -128,16 +128,16 @@ void GBufferRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Glob
         memcpy(dt, instancesData.data(), sizeof(InstanceData) * renderMeshData.InstancesTransforms.size());
         renderMeshData.InstancesDataBuffer->Unmap(0, 0);
 
-        commandList->SetGraphicsShaderResource(renderMeshData.InstancesDataBuffer, 5);
+        commandList->SetGraphicsShaderResource(renderMeshData.InstancesDataBuffer, 1);
 
         if(material.HasAlbedo)
-            commandList->BindGraphicsShaderResource(material.Albedo, 2);
+            commandList->BindGraphicsShaderResource(material.Albedo, 3);
 
         if(material.HasNormal)
-            commandList->BindGraphicsShaderResource(material.Normal, 3);
+            commandList->BindGraphicsShaderResource(material.Normal, 4);
 
         if(material.HasMetallicRoughness)
-            commandList->BindGraphicsShaderResource(material.MetallicRoughness, 4);
+            commandList->BindGraphicsShaderResource(material.MetallicRoughness, 5);
             
         const auto primitives = renderMeshData.Primitives;
         for(const auto& primitive : primitives)

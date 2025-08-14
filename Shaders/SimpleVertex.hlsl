@@ -4,6 +4,13 @@ cbuffer CBuf : register(b0)
     float Time;
     float3 CameraPosition;
     int Mode;
+    float3 DirLightDirection;
+    float DirLightIntensity;
+    float3 Padding;
+    row_major float4x4 InvViewProj;
+    row_major float4x4 ShadowTransform;
+    bool ShadowEnabled;
+    float3 Padding2;
 };
 
 struct InstanceData
@@ -14,7 +21,7 @@ struct InstanceData
     bool HasMetallicRoughness;
 };
 
-StructuredBuffer<InstanceData> InstancesData : register(t5, space1);
+StructuredBuffer<InstanceData> InstancesData : register(t1, space1);
 
 struct VertexIn
 {

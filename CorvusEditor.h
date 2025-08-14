@@ -93,7 +93,7 @@ private:
     bool m_enableSSAO = false;
     bool m_enableSkyBox = true;
     bool m_enablePointLights = false;
-    bool m_renderTransparentObjects = false;
+    bool m_renderTransparentObjects = true;
 
     ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::TRANSLATE;
     ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;
