@@ -155,7 +155,7 @@ GraphicsPipeline::GraphicsPipeline(std::shared_ptr<Device> device, GraphicsPipel
         : specs.BlendOperation == Additive ? D3D12_BLEND_ONE : D3D12_BLEND_ZERO;
         Desc.BlendState.RenderTarget[RTVIndex].BlendOp = D3D12_BLEND_OP_ADD;
         Desc.BlendState.RenderTarget[RTVIndex].SrcBlendAlpha = D3D12_BLEND_ONE;
-        Desc.BlendState.RenderTarget[RTVIndex].DestBlendAlpha = D3D12_BLEND_ZERO;
+        Desc.BlendState.RenderTarget[RTVIndex].DestBlendAlpha =specs.BlendOperation == Transparency ? D3D12_BLEND_INV_SRC_ALPHA : D3D12_BLEND_ZERO;
         Desc.BlendState.RenderTarget[RTVIndex].BlendOpAlpha = D3D12_BLEND_OP_ADD;
         Desc.BlendState.RenderTarget[RTVIndex].LogicOp = D3D12_LOGIC_OP_NOOP;
         Desc.BlendState.RenderTarget[RTVIndex].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
