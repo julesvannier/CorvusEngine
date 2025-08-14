@@ -1,5 +1,5 @@
-﻿// SamplerState Sampler : register(s1);
-// Texture2D Albedo : register(t2);
+﻿SamplerState Sampler : register(s3);
+Texture2D Albedo : register(t4);
 // Texture2D Normal : register(t3);
 // Texture2D MetallicRoughness : register(t4);
 
@@ -20,6 +20,9 @@ StructuredBuffer<float> OpacityData : register(t2, space2);
 
 float4 Main(PixelIn Input) : SV_Target
 {
-    // safety Yellow
-    return float4(255.0f, 240.0f, 0.0f, OpacityData[Input.instanceID]);
+    float4 albedo = float4(1.0, 1.0, 1.0, 1.0);
+    if(Input.HasAlbedo)
+        albedo = Albedo.Sample(Sampler, Input.uv);
+    
+    return float4(albedo.xyz, OpacityData[Input.instanceID]);
 }

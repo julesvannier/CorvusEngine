@@ -556,6 +556,18 @@ void CorvusEditor::RenderUI(float width, float height)
                 }
             }
 
+            if (auto meshComp = m_selectedGo->GetComponent<MeshComponent>())
+            {
+                ImGui::Text("Mesh");
+                ImGui::Spacing();
+
+                auto& material = meshComp->GetRenderItem()->GetMaterial();
+                ImGui::Text("Material");
+                ImGui::Checkbox("Transparent", &material.IsTransparent);
+                if (material.IsTransparent)
+                    ImGui::SliderFloat("Opacity", &material.Opacity, 0.0f, 1.0f);
+            }
+
             if (auto lightComp = m_selectedGo->GetComponent<PointLightComponent>())
             {
                 ImGui::Text("Point Light");

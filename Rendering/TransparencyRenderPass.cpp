@@ -36,6 +36,23 @@ void TransparencyRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, i
 
 void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTargetInfo)
 {
+    // Prepass to list all Opacity values
+    bool foundTransparentMesh = false;
+    std::vector<float> opacityData;
+    for (const auto renderMeshData : renderMeshesData)
+    {
+        auto& material = renderMeshData.Material;
+
+        if (!material.IsTransparent)
+            continue;
+
+        opacityData.emplace_back(material.Opacity);
+        foundTransparentMesh = true;
+    }
+
+    if (!foundTransparentMesh)
+        return;
+    
     auto view = camera.GetViewMatrix();
     auto proj = camera.GetProjMatrix();
     auto invViewProj = camera.GetInvViewProjMatrix();
@@ -67,24 +84,12 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
     commandList->ImageBarrier(renderTargetInfo.RenderTexture, D3D12_RESOURCE_STATE_RENDER_TARGET);
     commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer);
     commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
-    // commandList->BindGraphicsSampler(m_textureSampler, 2);
-
-    // Prepass to list all Opacity values
-    std::vector<float> opacityData;
-    for (const auto renderMeshData : renderMeshesData)
-    {
-        auto& material = renderMeshData.Material;
-
-        if (!material.IsTransparent)
-            continue;
-
-        opacityData.emplace_back(material.Opacity);
-    }
+    commandList->BindGraphicsSampler(m_textureSampler, 3);
 
     void* opacityDt;
     m_opacityValuesBuffer->Map(0, 0, &opacityDt);
     memcpy(opacityDt, opacityData.data(), sizeof(InstanceData) * renderMeshesData.size());
-    m_opacityValuesBuffer->Unmap(0, 0);
+    m_opacityValuesBuffer->Unmap(0, 0); 
     
     commandList->SetGraphicsShaderResource(m_opacityValuesBuffer, 2);
 
@@ -113,9 +118,9 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
 
         commandList->SetGraphicsShaderResource(renderMeshData.InstancesDataBuffer, 1);
 
-        // if(material.HasAlbedo)
-        //     commandList->BindGraphicsShaderResource(material.Albedo, 2);
-        //
+        if(material.HasAlbedo)
+            commandList->BindGraphicsShaderResource(material.Albedo, 4);
+        
         // if(material.HasNormal)
         //     commandList->BindGraphicsShaderResource(material.Normal, 3);
         //
