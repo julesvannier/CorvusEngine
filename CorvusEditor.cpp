@@ -563,6 +563,7 @@ void CorvusEditor::RenderUI(float width, float height)
 
                 auto& material = meshComp->GetRenderItem()->GetMaterial();
                 ImGui::Text("Material");
+                ImGui::Checkbox("Cast Shadows", &material.CastShadows);
                 ImGui::Checkbox("Transparent", &material.IsTransparent);
                 if (material.IsTransparent)
                     ImGui::SliderFloat("Opacity", &material.Opacity, 0.0f, 1.0f);

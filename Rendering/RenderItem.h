@@ -16,6 +16,7 @@ struct Material
     std::shared_ptr<Texture> MetallicRoughness;
     bool IsTransparent = false;
     float Opacity = 0.5f;
+    bool CastShadows = true;
 };
 
 struct Vertex

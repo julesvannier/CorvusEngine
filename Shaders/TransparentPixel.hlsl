@@ -22,8 +22,6 @@ Texture2D MetallicRoughness : register(t6);
 TextureCube Irradiance : register(t7);
 TextureCube PrefilterEnvMap : register(t8);
 // Texture2D BRDFLut : register(t8);
-Texture2D ShadowMap : register(t9);
-SamplerComparisonState CmpSampler : register(s10);
 
 struct PixelIn
 {
@@ -39,42 +37,6 @@ struct PixelIn
 };
 
 StructuredBuffer<float> OpacityData : register(t2, space2);
-
-float CalcShadowFactor(float4 shadowPos, float3 normal, float3 lightDir)
-{
-    // Complete projection by doing division by w.
-    shadowPos.xyz /= shadowPos.w;
-
-    if(shadowPos.z > 1.0)
-        return 0.0f;
-
-    // Depth in NDC space.
-    float depth = shadowPos.z;
-
-    float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.002);
-
-    uint width, height, numMips;
-    ShadowMap.GetDimensions(0, width, height, numMips);
-
-    // Texel size.
-    float dx = 1.0f / (float)width;
-
-    const float2 offsets[9] =
-    {
-        float2(-dx,  -dx), float2(0.0f,  -dx), float2(dx,  -dx),
-        float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
-        float2(-dx,  +dx), float2(0.0f,  +dx), float2(dx,  +dx)
-    };
-
-    float percentLit = 0.0f;
-    for(int i = 0; i < 9; ++i)
-    {
-        float pcf = ShadowMap.SampleCmpLevelZero(CmpSampler, shadowPos.xy + offsets[i], depth).r;
-        percentLit += depth - bias > pcf ? 1.0 : 0.0f;
-    }
-
-    return 1.0f - (percentLit / 9.0f);
-}
 
 float4 Main(PixelIn Input) : SV_Target
 {
@@ -108,13 +70,6 @@ float4 Main(PixelIn Input) : SV_Target
     float3 view = normalize(CameraPosition - Input.PositionWS.xyz);
     float3 F0 = lerp(Fdielectric, albedo.xyz, metallic);
 
-    float shadowFactor = 1.0f;
-    if(ShadowEnabled)
-    {
-        float4 shadowPos = mul(float4(Input.PositionWS, 1.0f), ShadowTransform);
-        shadowFactor = CalcShadowFactor(shadowPos, normal, dirLightVec);
-    }
-    
     float3 finalLight = PBR(F0, normal, view, dirLightVec, normalize(dirLightVec + view), lightColor.xyz, albedo.xyz, roughness, metallic);
 
     float3 Ks = FresnelSchlickRoughness(max(dot(normal, view), 0.0f), F0,  roughness);
@@ -136,7 +91,7 @@ float4 Main(PixelIn Input) : SV_Target
 
     float3 ambiantLight = Kd * diffuse + specular;
 
-    float3 outLight = (ambiantLight * DirLightIntensity) + finalLight * shadowFactor;
+    float3 outLight = (ambiantLight * DirLightIntensity) + finalLight;
 
     return float4(outLight, OpacityData[Input.instanceID]);
 }

@@ -81,6 +81,9 @@ void ShadowRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Globa
     for(const auto renderMeshData : renderMeshesData)
     {
         auto& material = renderMeshData.Material;
+
+        if (!material.CastShadows)
+            continue;
         
         std::vector<InstanceData> instancesData;
         for(auto instanceTransform : renderMeshData.InstancesTransforms)

@@ -88,12 +88,7 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
     commandList->BindGraphicsSampler(m_textureSampler, 3);
     commandList->BindGraphicsShaderResource(globalPassData.IrradianceMap, 7);
     commandList->BindGraphicsShaderResource(globalPassData.PrefilterEnvMap, 8);
-    if(globalPassData.EnableShadows)
-    {
-        commandList->BindGraphicsShaderResource(globalPassData.ShadowMap.DepthBuffer, 9);
-        commandList->BindGraphicsSampler(m_comparisonSampler, 9);
-    }
-
+    
     void* opacityDt;
     m_opacityValuesBuffer->Map(0, 0, &opacityDt);
     memcpy(opacityDt, opacityData.data(), sizeof(InstanceData) * renderMeshesData.size());
