@@ -96,6 +96,8 @@ CorvusEditor::CorvusEditor()
         AddModelToScene("Sphere", "Assets/sphere.gltf", "", "", "",
             { -13.5f, 0.0f, 0.0f }, {}, { 1.0f, 1.0f, 1.0f }, true);
 
+        AddQuadToScene({ -6.5f, -0.3f, 0.0f }, { 90.0f, 0.0f, 0.0f }, { 10.0f, 10.0f, 10.0f }); // Water
+
         AddModelToScene("Cube", "Assets/cube.obj", "", "", "",
             { -5.0f, -2.25f, 0.0f }, {}, { 12.0f, 0.5f, 6.8f });
     }
@@ -191,7 +193,7 @@ void CorvusEditor::Run()
         m_camera.UpdateInvViewProjMatrix(m_viewportCachedSize.x, m_viewportCachedSize.y);
 
         // ----------------------------------------------------------- ECS data -> renderer ----------------------------------------------------------
-        
+
         std::unordered_map<std::string, RenderMeshData> renderMeshesData;
         std::vector<PointLight> pointLights;
         for(const auto go : m_scene->m_gameObjects)
@@ -201,10 +203,10 @@ void CorvusEditor::Run()
                 if(const auto meshComp = go->GetComponent<MeshComponent>())
                 {
                     auto renderItem = meshComp->GetRenderItem();
-
+                    
                     if (renderItem->GetMaterial().IsTransparent && !m_renderTransparentObjects)
                         continue;
-
+                    
                     auto idRmd = renderMeshesData.find(renderItem->GetMeshIdentifier());
                     if(idRmd != renderMeshesData.end()) // RMD already exists for this mesh, let's add the transform only
                     {
@@ -366,6 +368,34 @@ std::shared_ptr<GameObject> CorvusEditor::AddModelToScene(std::string name, cons
     return go;
 }
 
+std::shared_ptr<GameObject> CorvusEditor::AddQuadToScene(DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 rotation, DirectX::XMFLOAT3 scale)
+{
+    auto quad = std::make_shared<RenderItem>();
+    const std::string quadIdentifier = "QuadMesh";
+    quad->SetPath(quadIdentifier);
+    quad->CreateQuadMesh(m_renderer);
+
+    quad->GetMaterial().IsTransparent = true;
+    quad->GetMaterial().CastShadows = false;
+    
+    auto idRmd = m_meshesInstancesCount.find(quadIdentifier);
+    if(idRmd != m_meshesInstancesCount.end())
+    {
+        int& count = idRmd->second;
+        count++;
+    }
+    else
+    {
+        m_meshesInstancesCount.emplace(quadIdentifier, 1);
+    }
+
+    auto go = m_scene->CreateGameObject("Quad", position, rotation, scale);
+    auto meshComp = go->AddComponent<MeshComponent>();
+    meshComp->SetRenderItem(quad);
+    
+    return go;
+}
+
 void CorvusEditor::RemoveModelFromScene(std::shared_ptr<GameObject> goToRemove)
 {
     m_scene->RemoveGameObject(goToRemove);
@@ -476,6 +506,7 @@ void CorvusEditor::RenderUI(float width, float height)
         ImGui::Checkbox("Enable Shadows", &m_enableShadows);
         ImGui::Checkbox("Enable SSAO", &m_enableSSAO);
         ImGui::Checkbox("Translucancy pass", &m_renderTransparentObjects);
+        ImGui::Checkbox("Water", &m_renderWater);
         ImGui::End();
 
         ImGui::Begin("Log");

@@ -44,6 +44,8 @@ public:
     ~RenderItem();
     
     void ImportMesh(std::shared_ptr<D3D12Renderer> renderer, std::string filePath);
+    void CreateQuadMesh(std::shared_ptr<D3D12Renderer> renderer);
+    void SetPath(const std::string& filePath) { m_path = filePath; }
 
     std::string GetPath() { return m_path; }
     std::vector<Primitive>& GetPrimitives() { return m_primitives; }
