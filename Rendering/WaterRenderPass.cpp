@@ -22,6 +22,9 @@ void WaterRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int wi
     
     m_sceneConstantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
     renderer->CreateConstantBuffer(m_sceneConstantBuffer);
+
+    m_waterConstantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
+    renderer->CreateConstantBuffer(m_waterConstantBuffer);
 }
 
 void WaterRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
@@ -71,6 +74,15 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
     memcpy(data, &cbuf, sizeof(SceneConstantBuffer));
     m_sceneConstantBuffer->Unmap(0, 0);
 
+    WaterConstantBuffer waterCb;
+    waterCb.WaterColor = globalPassData.WaterParams.WaterColor;
+    waterCb.WavesScalar = globalPassData.WaterParams.WavesScalar;
+
+    void* data2;
+    m_waterConstantBuffer->Map(0, 0, &data2);
+    memcpy(data2, &waterCb, sizeof(WaterConstantBuffer));
+    m_waterConstantBuffer->Unmap(0, 0);
+
     auto commandList = renderer->GetCurrentCommandList();
     
     commandList->SetTopology(Topology::QuadPatch);
@@ -78,6 +90,7 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
     commandList->ImageBarrier(renderTargetInfo.RenderTexture, D3D12_RESOURCE_STATE_RENDER_TARGET);
     commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer);
     commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
+    commandList->BindGraphicsConstantBuffer(m_waterConstantBuffer, 2);
     
     for(const auto renderMeshData : renderMeshesData)
     {

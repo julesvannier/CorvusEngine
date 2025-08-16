@@ -13,6 +13,13 @@
     float3 Padding2;
 };
 
+cbuffer WaterCBuf : register(b2)
+{
+    float4 WaterColor;
+    float WavesScalar;
+    float Paddin2[3];
+}
+
 struct HullOut
 {
     float4 pos : POSITION0;
@@ -43,7 +50,7 @@ DomainOut Main(PatchTess patchTess, float2 uv : SV_DomainLocation, const OutputP
     float wave2 = 0.1f * sin(p.x + Time * 4.0f);
     float wave3 = 0.2f * sin(p.x * 2.0f - Time * 3.0f);
 
-    float t = wave1 + wave2 + wave3;
+    float t = (wave1 + wave2 + wave3) * WavesScalar;
     p.y = p.y + t;
     
     DomainOut dout;

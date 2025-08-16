@@ -258,6 +258,7 @@ void CorvusEditor::Run()
         passData.PrefilterEnvMap = m_skyboxPass->GetEnvironmentMaps().PrefilterEnvMap;
         passData.BRDFLut = m_skyboxPass->GetEnvironmentMaps().BRDFLut;
         passData.EnableShadows = m_enableShadows;
+        passData.WaterParams = m_waterSettings;
 
         // ------------------------------------------------------------- Render Passes --------------------------------------------------------------------
 
@@ -683,6 +684,16 @@ void CorvusEditor::RenderUI(float width, float height)
         {
             ImGui::Begin("Debug SSAO");
             ImGui::Image((ImTextureID)m_SSAORenderPass->GetSSAOTexture()->m_srvUav.GPU.ptr, ImVec2(320, 180));
+            ImGui::End();
+        }
+
+        if (m_renderWater)
+        {
+            ImGui::Begin("Water Settings");
+            ImGui::SliderFloat("Waves Intensity", &m_waterSettings.WavesScalar, 0.0f, 2.0f);
+            float color[4] = { m_waterSettings.WaterColor.x, m_waterSettings.WaterColor.y, m_waterSettings.WaterColor.z, m_waterSettings.WaterColor.w };
+            ImGui::ColorEdit4("Water Color", color, ImGuiColorEditFlags_AlphaBar);
+            m_waterSettings.WaterColor = { color[0], color[1], color[2], color[3] };
             ImGui::End();
         }
 

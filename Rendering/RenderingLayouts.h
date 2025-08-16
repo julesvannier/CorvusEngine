@@ -25,6 +25,13 @@ struct PointLightsConstantBuffer
     PointLight PointLights[MAX_LIGHTS];
 };
 
+struct WaterConstantBuffer
+{
+    DirectX::XMFLOAT4 WaterColor = { 0.0f, 0.0f, 255.0f, 0.6f };
+    float WavesScalar = 1.0f;
+    float Paddin2[3];
+};
+
 struct SceneConstantBuffer
 {
     DirectX::XMFLOAT4X4 ViewProj;

@@ -23,6 +23,12 @@ struct GBuffer
     std::shared_ptr<Texture> DepthBuffer;
 };
 
+struct WaterParams
+{
+    DirectX::XMFLOAT4 WaterColor = { 28.0f/255.0f, 127.0f/255.0f, 230.0f/255.0f, 0.65f };
+    float WavesScalar = 0.45f;
+};
+
 struct GlobalPassData
 {
     float DeltaTime;
@@ -38,6 +44,7 @@ struct GlobalPassData
     bool EnableShadows;
     ShadowMap ShadowMap;
     GBuffer GBuffer;
+    WaterParams WaterParams;
 };
 
 struct RenderMeshData

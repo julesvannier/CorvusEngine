@@ -11,4 +11,5 @@ public:
 private:
     std::shared_ptr<GraphicsPipeline> m_waterTesselationPipeline;
     std::shared_ptr<Buffer> m_sceneConstantBuffer;
+    std::shared_ptr<Buffer> m_waterConstantBuffer;
 };
