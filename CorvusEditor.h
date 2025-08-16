@@ -25,7 +25,7 @@ public:
 
     std::shared_ptr<GameObject> AddModelToScene(std::string name, const std::string& modelPath, const std::string& albedoPath, const std::string& normalPath, const std::string& mrPath,
         DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 rotation = { 0.0f, 0.0f, 0.0f }, DirectX::XMFLOAT3 scale = { 1.0f, 1.0f, 1.0f }, bool transparent = false);
-    std::shared_ptr<GameObject> AddQuadToScene( DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 rotation = { 0.0f, 0.0f, 0.0f }, DirectX::XMFLOAT3 scale = { 1.0f, 1.0f, 1.0f });
+    std::shared_ptr<GameObject> AddWaterToScene( DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 rotation = { 0.0f, 0.0f, 0.0f }, DirectX::XMFLOAT3 scale = { 1.0f, 1.0f, 1.0f });
     void RemoveModelFromScene(std::shared_ptr<GameObject> goToRemove);
     std::shared_ptr<GameObject> AddLightToScene(DirectX::XMFLOAT3 position, DirectX::XMFLOAT4 color = { 1.0f, 1.0f, 1.0f, 1.0f }, bool randomColor = false);
     void RenderUI(float width, float height);

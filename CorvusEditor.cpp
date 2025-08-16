@@ -99,7 +99,7 @@ CorvusEditor::CorvusEditor()
         AddModelToScene("Sphere", "Assets/sphere.gltf", "", "", "",
             { -13.5f, 0.0f, 0.0f }, {}, { 1.0f, 1.0f, 1.0f }, true);
 
-        AddQuadToScene({ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }); // Water
+        AddWaterToScene({ -5.0f, -0.4f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }); // Water
 
         AddModelToScene("Cube", "Assets/cube.obj", "", "", "",
             { -5.0f, -2.25f, 0.0f }, {}, { 12.0f, 0.5f, 6.8f });
@@ -380,7 +380,7 @@ std::shared_ptr<GameObject> CorvusEditor::AddModelToScene(std::string name, cons
     return go;
 }
 
-std::shared_ptr<GameObject> CorvusEditor::AddQuadToScene(DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 rotation, DirectX::XMFLOAT3 scale)
+std::shared_ptr<GameObject> CorvusEditor::AddWaterToScene(DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 rotation, DirectX::XMFLOAT3 scale)
 {
     auto quad = std::make_shared<RenderItem>();
     const std::string quadIdentifier = "QuadMesh";

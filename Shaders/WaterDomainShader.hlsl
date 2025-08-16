@@ -39,8 +39,12 @@ DomainOut Main(PatchTess patchTess, float2 uv : SV_DomainLocation, const OutputP
     float3 v2 = lerp(quad[2].pos, quad[3].pos, uv.x).xyz;
     float3 p = lerp(v1, v2, uv.y);
 
-    float t = 0.06f * cos(Time * 3.0f);
-    p.y = t * (p.z * sin(p.x) + p.x * cos(p.z));
+    float wave1 = 0.3f * sin(p.x - Time * 2.0f);  
+    float wave2 = 0.1f * sin(p.x + Time * 4.0f);
+    float wave3 = 0.2f * sin(p.x * 2.0f - Time * 3.0f);
+
+    float t = wave1 + wave2 + wave3;
+    p.y = p.y + t;
     
     DomainOut dout;
     dout.pos = float4(p, 1.0f);

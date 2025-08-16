@@ -10,7 +10,7 @@ struct PatchTess
 };
  
 #define NUM_CONTROL_POINTS 4
-#define TESS_FACTOR 32;
+#define TESS_FACTOR 64;
  
 PatchTess ConstantHS(InputPatch<VertexOut, NUM_CONTROL_POINTS> patch, uint PatchID : SV_PrimitiveID)
 {
