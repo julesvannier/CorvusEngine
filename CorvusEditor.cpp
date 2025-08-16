@@ -64,6 +64,9 @@ CorvusEditor::CorvusEditor()
     m_transparencyPass = std::make_shared<TransparencyRenderPass>();
     m_transparencyPass->Initialize(m_renderer, defaultWidth, defaultHeight);
 
+    m_waterPass = std::make_shared<WaterRenderPass>();
+    m_waterPass->Initialize(m_renderer, defaultWidth, defaultHeight);
+
     m_sceneRenderTexture = m_renderer->CreateTexture(defaultWidth, defaultHeight, TextureFormat::RGBA8, TextureType::RenderTarget);
     m_renderer->CreateRenderTargetView(m_sceneRenderTexture);
     m_renderer->CreateShaderResourceView(m_sceneRenderTexture);
@@ -206,6 +209,9 @@ void CorvusEditor::Run()
                     
                     if (renderItem->GetMaterial().IsTransparent && !m_renderTransparentObjects)
                         continue;
+
+                    if (renderItem->GetMaterial().IsWater && !m_renderWater)
+                        continue;
                     
                     auto idRmd = renderMeshesData.find(renderItem->GetMeshIdentifier());
                     if(idRmd != renderMeshesData.end()) // RMD already exists for this mesh, let's add the transform only
@@ -294,6 +300,12 @@ void CorvusEditor::Run()
             m_transparencyPass->Pass(m_renderer, passData, m_camera, RMDs, rtInfo);
         }
 
+        if (m_renderWater)
+        {
+            rtInfo.DepthBuffer = m_GBufferRenderPass->GetGBuffer().DepthBuffer;
+            m_waterPass->Pass(m_renderer, passData, m_camera, RMDs, rtInfo);
+        }
+
         // ------------------------------------------------------------- UI Rendering --------------------------------------------------------------------
         
         commandList->BindRenderTargets({ backbuffer }, nullptr);
@@ -375,8 +387,9 @@ std::shared_ptr<GameObject> CorvusEditor::AddQuadToScene(DirectX::XMFLOAT3 posit
     quad->SetPath(quadIdentifier);
     quad->CreateQuadMesh(m_renderer);
 
-    quad->GetMaterial().IsTransparent = true;
+    quad->GetMaterial().IsTransparent = false;
     quad->GetMaterial().CastShadows = false;
+    quad->GetMaterial().IsWater = true;
     
     auto idRmd = m_meshesInstancesCount.find(quadIdentifier);
     if(idRmd != m_meshesInstancesCount.end())

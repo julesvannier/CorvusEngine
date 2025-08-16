@@ -109,7 +109,7 @@ void GBufferRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Glob
     {
         auto& material = renderMeshData.Material;
 
-        if (material.IsTransparent)
+        if (material.IsTransparent || material.IsWater)
             continue;
 
         std::vector<InstanceData> instancesData;

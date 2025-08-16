@@ -15,6 +15,7 @@ struct Material
     bool HasMetallicRoughness = false;
     std::shared_ptr<Texture> MetallicRoughness;
     bool IsTransparent = false;
+    bool IsWater = false;
     float Opacity = 0.5f;
     bool CastShadows = true;
 };

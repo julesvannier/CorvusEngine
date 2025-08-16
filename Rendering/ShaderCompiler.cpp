@@ -16,6 +16,12 @@ const char* GetProfileFromType(ShaderType type)
         case ShaderType::Compute: {
             return "cs_6_6";
         }
+        case ShaderType::Hull: {
+            return "hs_6_6";
+        }
+        case ShaderType::Domain: {
+            return "ds_6_6";
+        }
     }
     return "???";
 }

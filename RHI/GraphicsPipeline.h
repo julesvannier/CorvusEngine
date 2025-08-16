@@ -33,6 +33,12 @@ enum BlendOperation
     Additive
 };
 
+enum TopologyType
+{
+    Triangle,
+    Patch
+};
+
 struct GraphicsPipelineSpecs
 {
     FillMode Fill;
@@ -44,6 +50,9 @@ struct GraphicsPipelineSpecs
     TextureFormat DepthFormat;
     bool DepthEnabled;
     BlendOperation BlendOperation;
+    
+    TopologyType Topology = Triangle;
+    bool TessellationEnable = false;
 
     std::unordered_map<ShaderType, Shader> ShadersBytecodes;
 };

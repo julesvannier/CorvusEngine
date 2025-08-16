@@ -14,6 +14,8 @@
 #include "Rendering/ShadowRenderPass.h"
 #include "Rendering/SkyBoxRenderPass.h"
 #include "Rendering/SSAORenderPass.h"
+#include "Rendering/TransparencyRenderPass.h"
+#include "Rendering/WaterRenderPass.h"
 
 class CorvusEditor : public InputListener
 {
@@ -56,8 +58,9 @@ private:
     std::shared_ptr<SSAORenderPass> m_SSAORenderPass;
     std::shared_ptr<LightingRenderPass> m_deferredLightingPass;
     std::shared_ptr<SkyBoxRenderPass> m_skyboxPass;
-    std::shared_ptr<RenderPass> m_transparencyPass;
-    
+    std::shared_ptr<TransparencyRenderPass> m_transparencyPass;
+    std::shared_ptr<WaterRenderPass> m_waterPass;
+
     std::shared_ptr<ResourcesManager> m_resourceManager;
 
     std::shared_ptr<Scene> m_scene;
@@ -95,7 +98,7 @@ private:
     bool m_enableSkyBox = true;
     bool m_enablePointLights = false;
     bool m_renderTransparentObjects = true;
-    bool m_renderWater = true;
+    bool m_renderWater = false;
 
     ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::TRANSLATE;
     ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;

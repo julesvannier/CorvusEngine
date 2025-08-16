@@ -10,6 +10,13 @@ GraphicsPipeline::GraphicsPipeline(std::shared_ptr<Device> device, GraphicsPipel
     Shader& vertexBytecode = specs.ShadersBytecodes[ShaderType::Vertex];
     Shader& fragmentBytecode = specs.ShadersBytecodes[ShaderType::Pixel];
 
+    // TODO WIP Tesselation
+    // if (specs.TessellationEnable)
+    // {
+    //     Shader& hullByteCode = specs.ShadersBytecodes[ShaderType::Hull];
+    //     Shader& domainByteCode = specs.ShadersBytecodes[ShaderType::Domain];
+    // }
+
     D3D12_SHADER_DESC VertexDesc = {};
     D3D12_SHADER_DESC PixelDesc = {};
 
@@ -168,7 +175,7 @@ GraphicsPipeline::GraphicsPipeline(std::shared_ptr<Device> device, GraphicsPipel
     Desc.RasterizerState.FillMode = D3D12_FILL_MODE(specs.Fill);
     Desc.RasterizerState.CullMode = D3D12_CULL_MODE(specs.Cull);
     Desc.RasterizerState.FrontCounterClockwise = specs.DepthEnabled;
-    Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    Desc.PrimitiveTopologyType = specs.Topology == Patch ? D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH : D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 
     Desc.DepthStencilState.DepthEnable = specs.DepthEnabled;
     Desc.RasterizerState.DepthClipEnable = specs.DepthEnabled;

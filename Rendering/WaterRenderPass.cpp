@@ -1,6 +1,6 @@
-﻿#include "TransparencyRenderPass.h"
+﻿#include "WaterRenderPass.h"
 
-void TransparencyRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
+void WaterRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
 {
     m_textureSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
 
@@ -16,19 +16,19 @@ void TransparencyRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer,
     ShaderCompiler::CompileShader("Shaders/SimpleVertex.hlsl", ShaderType::Vertex, specs.ShadersBytecodes[ShaderType::Vertex]);
     ShaderCompiler::CompileShader("Shaders/TransparentPixel.hlsl", ShaderType::Pixel, specs.ShadersBytecodes[ShaderType::Pixel]);
 
-    m_forwardTransparencyPipeline = renderer->CreateGraphicsPipeline(specs);
-
+    m_waterTesselationPipeline = renderer->CreateGraphicsPipeline(specs);
+    
     m_sceneConstantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
     renderer->CreateConstantBuffer(m_sceneConstantBuffer);
 
     m_opacityValuesBuffer = renderer->CreateBuffer(sizeof(float) * MAX_TRANSPARENT_OBJECTS, sizeof(float), BufferType::Structured, false);
 }
 
-void TransparencyRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
+void WaterRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
 {
 }
 
-void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTargetInfo)
+void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTargetInfo)
 {
     // Prepass to list all Opacity values
     bool foundTransparentMesh = false;
@@ -37,7 +37,7 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
     {
         auto& material = renderMeshData.Material;
 
-        if (!material.IsTransparent)
+        if (!material.IsWater)
             continue;
 
         opacityData.emplace_back(material.Opacity);
@@ -74,7 +74,7 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
     auto commandList = renderer->GetCurrentCommandList();
     
     commandList->SetTopology(Topology::TriangleList);
-    commandList->BindGraphicsPipeline(m_forwardTransparencyPipeline);
+    commandList->BindGraphicsPipeline(m_waterTesselationPipeline);
     commandList->ImageBarrier(renderTargetInfo.RenderTexture, D3D12_RESOURCE_STATE_RENDER_TARGET);
     commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer);
     commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
@@ -93,7 +93,7 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
     {
         auto& material = renderMeshData.Material;
 
-        if (!material.IsTransparent)
+        if (!material.IsWater)
             continue;
 
         std::vector<InstanceData> instancesData;

@@ -7,7 +7,9 @@ enum class ShaderType
 {
     Vertex,
     Pixel,
-    Compute
+    Compute,
+    Hull,
+    Domain
 };
 
 struct Shader
