@@ -88,7 +88,7 @@ void RenderItem::CreateQuadMesh(std::shared_ptr<D3D12Renderer> renderer)
     DirectX::XMStoreFloat4x4(&out.LocalPrimTransform, identityMatrix);
 
     std::vector<Vertex> vertices(4);
-    std::vector<uint32_t> indices = { 0, 1, 2, 0, 2, 3 };
+    std::vector<uint32_t> indices = { 0, 1, 2, 3 };
 
     // Bottom-left
     vertices[0].Position = DirectX::XMFLOAT3(-1.0f, -1.0f, 0.0f);

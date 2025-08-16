@@ -98,7 +98,7 @@ private:
     bool m_enableSkyBox = true;
     bool m_enablePointLights = false;
     bool m_renderTransparentObjects = true;
-    bool m_renderWater = false;
+    bool m_renderWater = true;
 
     ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::TRANSLATE;
     ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;

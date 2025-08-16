@@ -2,8 +2,6 @@
 
 void WaterRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
 {
-    m_textureSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
-
     GraphicsPipelineSpecs specs;
     specs.FormatCount = 1;
     specs.Formats[0] = TextureFormat::RGBA8;
@@ -13,15 +11,15 @@ void WaterRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int wi
     specs.DepthFormat = TextureFormat::R32Depth;
     specs.Cull = CullMode::Back;
     specs.Fill = FillMode::Solid;
-    ShaderCompiler::CompileShader("Shaders/SimpleVertex.hlsl", ShaderType::Vertex, specs.ShadersBytecodes[ShaderType::Vertex]);
-    ShaderCompiler::CompileShader("Shaders/TransparentPixel.hlsl", ShaderType::Pixel, specs.ShadersBytecodes[ShaderType::Pixel]);
+    ShaderCompiler::CompileShader("Shaders/WaterVertex.hlsl", ShaderType::Vertex, specs.ShadersBytecodes[ShaderType::Vertex]);
+    ShaderCompiler::CompileShader("Shaders/WaterHullShader.hlsl", ShaderType::Hull, specs.ShadersBytecodes[ShaderType::Hull]);
+    ShaderCompiler::CompileShader("Shaders/WaterDomainShader.hlsl", ShaderType::Domain, specs.ShadersBytecodes[ShaderType::Domain]);
+    ShaderCompiler::CompileShader("Shaders/WaterPixel.hlsl", ShaderType::Pixel, specs.ShadersBytecodes[ShaderType::Pixel]);
 
     m_waterTesselationPipeline = renderer->CreateGraphicsPipeline(specs);
     
     m_sceneConstantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
     renderer->CreateConstantBuffer(m_sceneConstantBuffer);
-
-    m_opacityValuesBuffer = renderer->CreateBuffer(sizeof(float) * MAX_TRANSPARENT_OBJECTS, sizeof(float), BufferType::Structured, false);
 }
 
 void WaterRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
@@ -31,7 +29,7 @@ void WaterRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int widt
 void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTargetInfo)
 {
     // Prepass to list all Opacity values
-    bool foundTransparentMesh = false;
+    bool foundWaterMesh = false;
     std::vector<float> opacityData;
     for (const auto renderMeshData : renderMeshesData)
     {
@@ -41,10 +39,10 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
             continue;
 
         opacityData.emplace_back(material.Opacity);
-        foundTransparentMesh = true;
+        foundWaterMesh = true;
     }
 
-    if (!foundTransparentMesh)
+    if (!foundWaterMesh)
         return;
     
     auto view = camera.GetViewMatrix();
@@ -73,22 +71,12 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
 
     auto commandList = renderer->GetCurrentCommandList();
     
-    commandList->SetTopology(Topology::TriangleList);
+    commandList->SetTopology(Topology::QuadPatch);
     commandList->BindGraphicsPipeline(m_waterTesselationPipeline);
     commandList->ImageBarrier(renderTargetInfo.RenderTexture, D3D12_RESOURCE_STATE_RENDER_TARGET);
     commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer);
-    commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
-    commandList->BindGraphicsSampler(m_textureSampler, 3);
-    commandList->BindGraphicsShaderResource(globalPassData.IrradianceMap, 7);
-    commandList->BindGraphicsShaderResource(globalPassData.PrefilterEnvMap, 8);
+    // commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
     
-    void* opacityDt;
-    m_opacityValuesBuffer->Map(0, 0, &opacityDt);
-    memcpy(opacityDt, opacityData.data(), sizeof(InstanceData) * renderMeshesData.size());
-    m_opacityValuesBuffer->Unmap(0, 0); 
-    
-    commandList->SetGraphicsShaderResource(m_opacityValuesBuffer, 2);
-
     for(const auto renderMeshData : renderMeshesData)
     {
         auto& material = renderMeshData.Material;
@@ -114,15 +102,6 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
 
         commandList->SetGraphicsShaderResource(renderMeshData.InstancesDataBuffer, 1);
 
-        if(material.HasAlbedo)
-            commandList->BindGraphicsShaderResource(material.Albedo, 4);
-        
-        if(material.HasNormal)
-            commandList->BindGraphicsShaderResource(material.Normal, 5);
-        
-        if(material.HasMetallicRoughness)
-            commandList->BindGraphicsShaderResource(material.MetallicRoughness, 6);
-            
         const auto primitives = renderMeshData.Primitives;
         for(const auto& primitive : primitives)
         {

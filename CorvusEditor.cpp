@@ -99,7 +99,7 @@ CorvusEditor::CorvusEditor()
         AddModelToScene("Sphere", "Assets/sphere.gltf", "", "", "",
             { -13.5f, 0.0f, 0.0f }, {}, { 1.0f, 1.0f, 1.0f }, true);
 
-        AddQuadToScene({ -6.5f, -0.3f, 0.0f }, { 90.0f, 0.0f, 0.0f }, { 10.0f, 10.0f, 10.0f }); // Water
+        AddQuadToScene({ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }); // Water
 
         AddModelToScene("Cube", "Assets/cube.obj", "", "", "",
             { -5.0f, -2.25f, 0.0f }, {}, { 12.0f, 0.5f, 6.8f });
