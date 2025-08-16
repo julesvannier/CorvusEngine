@@ -11,6 +11,8 @@ void WaterRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int wi
     specs.DepthFormat = TextureFormat::R32Depth;
     specs.Cull = CullMode::Back;
     specs.Fill = FillMode::Solid;
+    specs.Topology = Patch;
+    specs.TessellationEnable = true;
     ShaderCompiler::CompileShader("Shaders/WaterVertex.hlsl", ShaderType::Vertex, specs.ShadersBytecodes[ShaderType::Vertex]);
     ShaderCompiler::CompileShader("Shaders/WaterHullShader.hlsl", ShaderType::Hull, specs.ShadersBytecodes[ShaderType::Hull]);
     ShaderCompiler::CompileShader("Shaders/WaterDomainShader.hlsl", ShaderType::Domain, specs.ShadersBytecodes[ShaderType::Domain]);
@@ -75,7 +77,7 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
     commandList->BindGraphicsPipeline(m_waterTesselationPipeline);
     commandList->ImageBarrier(renderTargetInfo.RenderTexture, D3D12_RESOURCE_STATE_RENDER_TARGET);
     commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer);
-    // commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
+    commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
     
     for(const auto renderMeshData : renderMeshesData)
     {

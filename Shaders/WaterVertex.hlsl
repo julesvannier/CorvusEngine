@@ -11,10 +11,6 @@ StructuredBuffer<InstanceData> InstancesData : register(t1, space1);
 struct VertexIn
 {
     float3 position : POSITION;
-    float2 texcoord : TEXCOORD;
-    float3 normal : NORMAL;
-    float3 tangent : TANGENT;
-    float3 binormal : BINORMAL;
 };
 
 struct VertexOut

@@ -29,6 +29,11 @@ struct Vertex
     DirectX::XMFLOAT3 Binormal;
 };
 
+struct LightVertex
+{
+    DirectX::XMFLOAT3 Position;
+};
+
 struct Primitive
 {
     DirectX::XMFLOAT4X4 LocalPrimTransform; // Local Prim Transform, in Object Space

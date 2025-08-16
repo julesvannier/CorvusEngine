@@ -1,17 +1,17 @@
-﻿// cbuffer CBuf : register(b0)
-// {
-//     row_major float4x4 ViewProj;
-//     float Time;
-//     float3 CameraPosition;
-//     int Mode;
-//     float3 DirLightDirection;
-//     float DirLightIntensity;
-//     float3 Padding;
-//     row_major float4x4 InvViewProj;
-//     row_major float4x4 ShadowTransform;
-//     bool ShadowEnabled;
-//     float3 Padding2;
-// };
+﻿cbuffer CBuf : register(b0)
+{
+    row_major float4x4 ViewProj;
+    float Time;
+    float3 CameraPosition;
+    int Mode;
+    float3 DirLightDirection;
+    float DirLightIntensity;
+    float3 Padding;
+    row_major float4x4 InvViewProj;
+    row_major float4x4 ShadowTransform;
+    bool ShadowEnabled;
+    float3 Padding2;
+};
 
 struct HullOut
 {
@@ -32,19 +32,19 @@ struct DomainOut
 [domain("quad")]
 DomainOut Main(PatchTess patchTess, float2 uv : SV_DomainLocation, const OutputPatch<HullOut, 4> quad)
 {
-    // TODO We need to transform pos from world space to view/projection here, can't do it in the vertex shader
+    // We need to transform pos from world space to view/projection here, can't do it in the vertex shader
     // (see : https://thedemonthrone.ca/projects/rendering-terrain/rendering-terrain-part-8-adding-tessellation/)
 
-    float3 v1 = lerp(quad[0].pos.xyz, quad[1].pos.xyz, uv.x);
-    float3 v2 = lerp(quad[2].pos.xyz, quad[3].pos.xyz, uv.x);
+    float3 v1 = lerp(quad[0].pos, quad[1].pos, uv.x).xyz;
+    float3 v2 = lerp(quad[2].pos, quad[3].pos, uv.x).xyz;
     float3 p = lerp(v1, v2, uv.y);
 
-    p.y = 0.3f * (p.z * sin(p.x) + p.x * cos(p.z));
+    float t = 0.06f * cos(Time * 3.0f);
+    p.y = t * (p.z * sin(p.x) + p.x * cos(p.z));
     
     DomainOut dout;
     dout.pos = float4(p, 1.0f);
-
-    // TODO viewproj here
+    dout.pos = mul(dout.pos, ViewProj);
     
     return dout;
 }

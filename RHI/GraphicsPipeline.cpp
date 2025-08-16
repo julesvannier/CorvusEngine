@@ -10,13 +10,6 @@ GraphicsPipeline::GraphicsPipeline(std::shared_ptr<Device> device, GraphicsPipel
     Shader& vertexBytecode = specs.ShadersBytecodes[ShaderType::Vertex];
     Shader& fragmentBytecode = specs.ShadersBytecodes[ShaderType::Pixel];
 
-    // TODO WIP Tesselation
-    // if (specs.TessellationEnable)
-    // {
-    //     Shader& hullByteCode = specs.ShadersBytecodes[ShaderType::Hull];
-    //     Shader& domainByteCode = specs.ShadersBytecodes[ShaderType::Domain];
-    // }
-
     D3D12_SHADER_DESC VertexDesc = {};
     D3D12_SHADER_DESC PixelDesc = {};
 
@@ -29,13 +22,28 @@ GraphicsPipeline::GraphicsPipeline(std::shared_ptr<Device> device, GraphicsPipel
     std::array<D3D12_SHADER_INPUT_BIND_DESC, 64> ShaderBinds;
     int BindCount = 0;
 
-    ID3D12ShaderReflection* pVertexReflection = ShaderCompiler::GetReflection(vertexBytecode, &VertexDesc);
-    ID3D12ShaderReflection* pPixelReflection = ShaderCompiler::GetReflection(fragmentBytecode, &PixelDesc);
+    ID3D12ShaderReflection* vertexReflection = ShaderCompiler::GetReflection(vertexBytecode, &VertexDesc);
+    ID3D12ShaderReflection* pixelReflection = ShaderCompiler::GetReflection(fragmentBytecode, &PixelDesc);
+
+    D3D12_SHADER_DESC HullDesc = {};
+    D3D12_SHADER_DESC DomainDesc = {};
+    
+    ID3D12ShaderReflection* hullReflection = nullptr;
+    ID3D12ShaderReflection* domainReflection = nullptr;
+    
+    if (specs.TessellationEnable)
+    {
+        Shader& hullByteCode = specs.ShadersBytecodes[ShaderType::Hull];
+        Shader& domainByteCode = specs.ShadersBytecodes[ShaderType::Domain];
+
+        hullReflection = ShaderCompiler::GetReflection(hullByteCode, &HullDesc);
+        domainReflection = ShaderCompiler::GetReflection(domainByteCode, &DomainDesc);
+    }
 
     for(int BoundResourceIndex = 0; BoundResourceIndex < VertexDesc.BoundResources; BoundResourceIndex++)
     {
         D3D12_SHADER_INPUT_BIND_DESC ShaderInputBindDesc = {};
-        pVertexReflection->GetResourceBindingDesc(BoundResourceIndex, &ShaderInputBindDesc);
+        vertexReflection->GetResourceBindingDesc(BoundResourceIndex, &ShaderInputBindDesc);
         ShaderBinds[BindCount] = ShaderInputBindDesc;
         BindCount++;
     }
@@ -43,9 +51,28 @@ GraphicsPipeline::GraphicsPipeline(std::shared_ptr<Device> device, GraphicsPipel
     for(int BoundResourceIndex = 0; BoundResourceIndex < PixelDesc.BoundResources; BoundResourceIndex++)
     {
         D3D12_SHADER_INPUT_BIND_DESC ShaderInputBindDesc = {};
-        pPixelReflection->GetResourceBindingDesc(BoundResourceIndex, &ShaderInputBindDesc);
+        pixelReflection->GetResourceBindingDesc(BoundResourceIndex, &ShaderInputBindDesc);
         ShaderBinds[BindCount] = ShaderInputBindDesc;
         BindCount++;
+    }
+
+    if (specs.TessellationEnable)
+    {
+        for(int BoundResourceIndex = 0; BoundResourceIndex < HullDesc.BoundResources; BoundResourceIndex++)
+        {
+            D3D12_SHADER_INPUT_BIND_DESC ShaderInputBindDesc = {};
+            hullReflection->GetResourceBindingDesc(BoundResourceIndex, &ShaderInputBindDesc);
+            ShaderBinds[BindCount] = ShaderInputBindDesc;
+            BindCount++;
+        }
+
+        for(int BoundResourceIndex = 0; BoundResourceIndex < DomainDesc.BoundResources; BoundResourceIndex++)
+        {
+            D3D12_SHADER_INPUT_BIND_DESC ShaderInputBindDesc = {};
+            domainReflection->GetResourceBindingDesc(BoundResourceIndex, &ShaderInputBindDesc);
+            ShaderBinds[BindCount] = ShaderInputBindDesc;
+            BindCount++;
+        }
     }
 
     std::sort(ShaderBinds.begin(), ShaderBinds.begin() + BindCount, ShaderCompiler::CompareShaderInput);
@@ -149,6 +176,17 @@ GraphicsPipeline::GraphicsPipeline(std::shared_ptr<Device> device, GraphicsPipel
     Desc.PS.pShaderBytecode = fragmentBytecode.Bytecode.data();
     Desc.PS.BytecodeLength = fragmentBytecode.Bytecode.size() * sizeof(uint32_t);
 
+    if (specs.TessellationEnable)
+    {
+        Shader& hullByteCode = specs.ShadersBytecodes[ShaderType::Hull];
+        Shader& domainByteCode = specs.ShadersBytecodes[ShaderType::Domain];
+        
+        Desc.HS.pShaderBytecode = hullByteCode.Bytecode.data();
+        Desc.HS.BytecodeLength = hullByteCode.Bytecode.size() * sizeof(uint32_t);
+        Desc.DS.pShaderBytecode = domainByteCode.Bytecode.data();
+        Desc.DS.BytecodeLength = domainByteCode.Bytecode.size() * sizeof(uint32_t);
+    }
+
     for (int RTVIndex = 0; RTVIndex < specs.FormatCount; RTVIndex++)
     {
         if(specs.BlendOperation != None)
@@ -197,7 +235,7 @@ GraphicsPipeline::GraphicsPipeline(std::shared_ptr<Device> device, GraphicsPipel
     for (int ParameterIndex = 0; ParameterIndex < VertexDesc.InputParameters; ParameterIndex++)
     {
         D3D12_SIGNATURE_PARAMETER_DESC ParameterDesc = {};
-        pVertexReflection->GetInputParameterDesc(ParameterIndex, &ParameterDesc);
+        vertexReflection->GetInputParameterDesc(ParameterIndex, &ParameterDesc);
 
         InputElementSemanticNames.push_back(ParameterDesc.SemanticName);
 
@@ -249,8 +287,8 @@ GraphicsPipeline::GraphicsPipeline(std::shared_ptr<Device> device, GraphicsPipel
         return;
     }
 
-    pPixelReflection->Release();
-    pVertexReflection->Release();
+    pixelReflection->Release();
+    vertexReflection->Release();
 
     LOG(Debug, "GraphicsPipeline: Created a Graphics Pipeline !");
 }
