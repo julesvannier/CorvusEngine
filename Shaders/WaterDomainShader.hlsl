@@ -34,6 +34,7 @@ struct PatchTess
 struct DomainOut
 {
     float4 pos : SV_POSITION;
+    float3 posWS : TEXCOORD0;
 };
 
 [domain("quad")]
@@ -56,6 +57,7 @@ DomainOut Main(PatchTess patchTess, float2 uv : SV_DomainLocation, const OutputP
     DomainOut dout;
     dout.pos = float4(p, 1.0f);
     dout.pos = mul(dout.pos, ViewProj);
+    dout.posWS = p;
     
     return dout;
 }
