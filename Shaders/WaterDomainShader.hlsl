@@ -35,6 +35,7 @@ struct DomainOut
 {
     float4 pos : SV_POSITION;
     float3 posWS : TEXCOORD0;
+    float3 normalWS : NORMAL;
 };
 
 [domain("quad")]
@@ -47,17 +48,30 @@ DomainOut Main(PatchTess patchTess, float2 uv : SV_DomainLocation, const OutputP
     float3 v2 = lerp(quad[2].pos, quad[3].pos, uv.x).xyz;
     float3 p = lerp(v1, v2, uv.y);
 
-    float wave1 = 0.3f * sin(p.x - Time * 2.0f);  
-    float wave2 = 0.1f * sin(p.x + Time * 4.0f);
-    float wave3 = 0.2f * sin(p.x * 2.0f - Time * 3.0f);
+    // p.y = sin(p.x);
 
-    float t = (wave1 + wave2 + wave3) * WavesScalar;
-    p.y = p.y + t;
-    
+    // implementation of : https://developer.nvidia.com/gpugems/gpugems/part-i-natural-effects/chapter-1-effective-water-simulation-physical-models sum of sines
+    float l = 1.2f; // wavelength
+    float a = WavesScalar; // amplitude
+    float s = 2.0f; // speed
+
+    float w = 2/l;
+    float phase = s * w;
+
+    p.y = a * sin(p.x * w + Time * phase);
+
+    float dx = a * w * cos(p.x * w + Time * phase);
+
+    float3 tangent = float3(1.0f, dx, 0.0f);
+    float3 binormal = float3(0.0f, 0.0f, 1.0f);
+
+    float3 normal = normalize(-cross(tangent, binormal)); 
+
     DomainOut dout;
     dout.pos = float4(p, 1.0f);
     dout.pos = mul(dout.pos, ViewProj);
     dout.posWS = p;
+    dout.normalWS = normal;
     
     return dout;
 }
