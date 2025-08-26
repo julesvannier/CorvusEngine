@@ -58,7 +58,7 @@ DomainOut Main(PatchTess patchTess, float2 uv : SV_DomainLocation, const OutputP
     {
         float l = 1.2f * i; // wavelength
         float a = WavesScalar * i; // amplitude
-        float s = 2.0f * i; // speed
+        float s = 0.8f * i; // speed
 
         float w = 2/l;
         float phase = s * w;
