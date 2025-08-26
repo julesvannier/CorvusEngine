@@ -41,7 +41,7 @@ float4 Main(PixelIn Input) : SV_Target
     float3 view = normalize(CameraPosition - Input.posWS.xyz);
     float t = 1.0f - pow(clamp(dot(Input.normalWS, view), 0.0f, 1.0f), 2.0f);
     t = remap(t, 0.0f, 1.0f, 0.25f, 0.9f);
-    
+
     return float4(color.x, color.y, color.z, t);
 
     // return WaterColor;

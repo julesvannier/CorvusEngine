@@ -23,6 +23,14 @@ struct GBuffer
     std::shared_ptr<Texture> DepthBuffer;
 };
 
+struct EnvironmentMaps
+{
+    std::shared_ptr<TextureCube> SkyBox;
+    std::shared_ptr<TextureCube> DiffuseIrradianceMap;
+    std::shared_ptr<TextureCube> PrefilterEnvMap;
+    std::shared_ptr<Texture> BRDFLut;
+};
+
 struct WaterParams
 {
     DirectX::XMFLOAT4 WaterColor = { 28.0f/255.0f, 127.0f/255.0f, 230.0f/255.0f, 0.65f };
@@ -38,13 +46,11 @@ struct GlobalPassData
     DirectionalLightInfo DirectionalInfo;
     float ViewportSizeX;
     float ViewportSizeY;
-    std::shared_ptr<TextureCube> IrradianceMap;
-    std::shared_ptr<TextureCube> PrefilterEnvMap;
-    std::shared_ptr<Texture> BRDFLut;
     bool EnableShadows;
     ShadowMap ShadowMap;
     GBuffer GBuffer;
     WaterParams WaterParams;
+    EnvironmentMaps EnviroMaps;
 };
 
 struct RenderMeshData

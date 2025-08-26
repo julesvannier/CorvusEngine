@@ -79,8 +79,8 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
     commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer);
     commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
     commandList->BindGraphicsSampler(m_textureSampler, 3);
-    commandList->BindGraphicsShaderResource(globalPassData.IrradianceMap, 7);
-    commandList->BindGraphicsShaderResource(globalPassData.PrefilterEnvMap, 8);
+    commandList->BindGraphicsShaderResource(globalPassData.EnviroMaps.DiffuseIrradianceMap, 7);
+    commandList->BindGraphicsShaderResource(globalPassData.EnviroMaps.PrefilterEnvMap, 8);
     
     void* opacityDt;
     m_opacityValuesBuffer->Map(0, 0, &opacityDt);

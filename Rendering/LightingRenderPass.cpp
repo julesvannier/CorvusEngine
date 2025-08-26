@@ -88,8 +88,8 @@ void LightingRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Glo
     commandList->BindGraphicsShaderResource(GBuffer.NormalRenderTarget, 3);
     commandList->BindGraphicsShaderResource(GBuffer.MetallicRoughnessRenderTarget, 4);
     commandList->BindGraphicsShaderResource(GBuffer.DepthBuffer, 5);
-    commandList->BindGraphicsShaderResource(globalPassData.IrradianceMap, 6);
-    commandList->BindGraphicsShaderResource(globalPassData.PrefilterEnvMap, 7);
+    commandList->BindGraphicsShaderResource(globalPassData.EnviroMaps.DiffuseIrradianceMap, 6);
+    commandList->BindGraphicsShaderResource(globalPassData.EnviroMaps.PrefilterEnvMap, 7);
     if(globalPassData.EnableShadows)
     {
         commandList->BindGraphicsShaderResource(globalPassData.ShadowMap.DepthBuffer, 8);

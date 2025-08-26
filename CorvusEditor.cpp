@@ -254,9 +254,7 @@ void CorvusEditor::Run()
         passData.DirectionalInfo.Intensity = m_dirLightIntensity;
         passData.ViewportSizeX = m_viewportCachedSize.x;
         passData.ViewportSizeY = m_viewportCachedSize.y;
-        passData.IrradianceMap = m_skyboxPass->GetEnvironmentMaps().DiffuseIrradianceMap;
-        passData.PrefilterEnvMap = m_skyboxPass->GetEnvironmentMaps().PrefilterEnvMap;
-        passData.BRDFLut = m_skyboxPass->GetEnvironmentMaps().BRDFLut;
+        passData.EnviroMaps = m_skyboxPass->GetEnvironmentMaps();
         passData.EnableShadows = m_enableShadows;
         passData.WaterParams = m_waterSettings;
 

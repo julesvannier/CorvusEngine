@@ -2,6 +2,8 @@
 
 void WaterRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
 {
+    m_textureSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
+    
     GraphicsPipelineSpecs specs;
     specs.FormatCount = 1;
     specs.Formats[0] = TextureFormat::RGBA8;
@@ -91,6 +93,8 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
     commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer);
     commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
     commandList->BindGraphicsConstantBuffer(m_waterConstantBuffer, 2);
+    // commandList->BindGraphicsShaderResource(globalPassData.EnviroMaps.SkyBox, 3);
+    // commandList->BindGraphicsSampler(m_textureSampler, 4);
     
     for(const auto renderMeshData : renderMeshesData)
     {
