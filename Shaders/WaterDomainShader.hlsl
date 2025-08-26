@@ -38,6 +38,8 @@ struct DomainOut
     float3 normalWS : NORMAL;
 };
 
+#define NUM_WAVES 3
+
 [domain("quad")]
 DomainOut Main(PatchTess patchTess, float2 uv : SV_DomainLocation, const OutputPatch<HullOut, 4> quad)
 {
@@ -48,24 +50,31 @@ DomainOut Main(PatchTess patchTess, float2 uv : SV_DomainLocation, const OutputP
     float3 v2 = lerp(quad[2].pos, quad[3].pos, uv.x).xyz;
     float3 p = lerp(v1, v2, uv.y);
 
-    // p.y = sin(p.x);
-
     // implementation of : https://developer.nvidia.com/gpugems/gpugems/part-i-natural-effects/chapter-1-effective-water-simulation-physical-models sum of sines
-    float l = 1.2f; // wavelength
-    float a = WavesScalar; // amplitude
-    float s = 2.0f; // speed
+    
+    float t = 0.0f;
+    float dx_sum = 0.0f; // sum of the derivatives
+    for (int i = 1; i < NUM_WAVES + 1; i++)
+    {
+        float l = 1.2f * i; // wavelength
+        float a = WavesScalar * i; // amplitude
+        float s = 2.0f * i; // speed
 
-    float w = 2/l;
-    float phase = s * w;
+        float w = 2/l;
+        float phase = s * w;
 
-    p.y = a * sin(p.x * w + Time * phase);
+        t += a * sin(p.x * w + Time * phase);
 
-    float dx = a * w * cos(p.x * w + Time * phase);
+        float dx = a * w * cos(p.x * w + Time * phase);
+        dx_sum += dx;
+    }
 
-    float3 tangent = float3(1.0f, dx, 0.0f);
+    p.y = p.y + t;
+
+    float3 tangent = normalize(float3(1.0f, dx_sum, 0.0f));
     float3 binormal = float3(0.0f, 0.0f, 1.0f);
 
-    float3 normal = normalize(-cross(tangent, binormal)); 
+    float3 normal = normalize(-cross(tangent, binormal));
 
     DomainOut dout;
     dout.pos = float4(p, 1.0f);

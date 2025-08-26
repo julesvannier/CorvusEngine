@@ -37,16 +37,13 @@ float4 Main(PixelIn Input) : SV_Target
     float3 l = normalize(DirLightDirection) * -1.0f;
     float ndotl = dot(Input.normalWS, l);
     float3 color = WaterColor.xyz * ndotl;
-    return float4(color.x, color.y, color.z, 0.8f);
 
-    // return WaterColor;
+    float3 view = normalize(CameraPosition - Input.posWS.xyz);
+    float t = 1.0f - pow(clamp(dot(Input.normalWS, view), 0.0f, 1.0f), 2.0f);
+    t = remap(t, 0.0f, 1.0f, 0.25f, 0.9f);
     
-    // float3 n = float3(0.0f, 1.0f, 0.0f);
-    // float3 view = normalize(CameraPosition - Input.posWS.xyz);
-    // float t = 1.0f - clamp(dot(n, view), 0.0f, 1.0f);
-    // t = remap(t, 0.0f, 1.0f, 0.25f, 0.9f);
-    // return float4(WaterColor.x, WaterColor.y, WaterColor.z, t);
-    
+    return float4(color.x, color.y, color.z, t);
+
     // return WaterColor;
     // return float4(0.0f, 0.0f, 255.0f, 0.6f);
 }
