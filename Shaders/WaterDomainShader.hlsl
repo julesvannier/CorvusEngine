@@ -53,28 +53,34 @@ DomainOut Main(PatchTess patchTess, float2 uv : SV_DomainLocation, const OutputP
     // implementation of : https://developer.nvidia.com/gpugems/gpugems/part-i-natural-effects/chapter-1-effective-water-simulation-physical-models sum of sines
     
     float t = 0.0f;
-    float dx_sum = 0.0f; // sum of the derivatives
+    float2 dx_sum = float2(0.0f, 0.0f); // sum of the derivatives in X and Z directions
+
     for (int i = 1; i < NUM_WAVES + 1; i++)
     {
         float l = 1.2f * i; // wavelength
         float a = WavesScalar * i; // amplitude
         float s = 0.8f * i; // speed
-
-        float w = 2/l;
+    
+        float angle = (float)i * 0.5f;
+        float2 direction = float2(cos(angle), sin(angle));
+    
+        float w = 2.0f / l; // frequency
         float phase = s * w;
-
-        t += a * sin(p.x * w + Time * phase);
-
-        float dx = a * w * cos(p.x * w + Time * phase);
-        dx_sum += dx;
+    
+        float wave_pos = dot(p.xz, direction);
+    
+        t += a * sin(wave_pos * w + Time * phase);
+    
+        float derivative = a * w * cos(wave_pos * w + Time * phase);
+        dx_sum += derivative * direction;
     }
 
     p.y = p.y + t;
 
-    float3 tangent = normalize(float3(1.0f, dx_sum, 0.0f));
-    float3 binormal = float3(0.0f, 0.0f, 1.0f);
+    float3 tangent_x = normalize(float3(1.0f, dx_sum.x, 0.0f));
+    float3 tangent_z = normalize(float3(0.0f, dx_sum.y, 1.0f));
 
-    float3 normal = normalize(-cross(tangent, binormal));
+    float3 normal = normalize(cross(tangent_z, tangent_x));
 
     DomainOut dout;
     dout.pos = float4(p, 1.0f);

@@ -34,12 +34,13 @@ float remap(float value, float inMin, float inMax, float outMin, float outMax)
 
 float4 Main(PixelIn Input) : SV_Target
 {
+    float3 n = normalize(Input.normalWS);
     float3 l = normalize(DirLightDirection) * -1.0f;
-    float ndotl = dot(Input.normalWS, l);
+    float ndotl = dot(n, l);
     float3 color = WaterColor.xyz * ndotl;
 
     float3 view = normalize(CameraPosition - Input.posWS.xyz);
-    float t = 1.0f - pow(clamp(dot(Input.normalWS, view), 0.0f, 1.0f), 2.0f);
+    float t = 1.0f - pow(saturate(dot(n, view)), 2.0f);
     t = remap(t, 0.0f, 1.0f, 0.25f, 0.9f);
 
     return float4(color.x, color.y, color.z, t);
