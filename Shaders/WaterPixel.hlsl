@@ -13,11 +13,15 @@
     float3 Padding2;
 };
 
+// SamplerState Sampler : register(s3);
+// Texture2D NormalMap : register(t4);
+
 struct PixelIn
 {
     float4 Position : SV_POSITION;
     float3 posWS : TEXCOORD0;
     float3 normalWS : NORMAL;
+    float2 uv : TEXCOORD1;
 };
 
 cbuffer WaterCBuf : register(b2)
@@ -34,11 +38,16 @@ float remap(float value, float inMin, float inMax, float outMin, float outMax)
 
 float4 Main(PixelIn Input) : SV_Target
 {
+    // float4 normalSampled = NormalMap.Sample(Sampler, Input.uv);
+    // normalSampled.xyz = (normalSampled.xyz * 2.0) - 1.0;
+    // normalSampled.xyz = mul(normalSampled.xyz, Input.tbn);
+    // normal = normalSampled.xyz;
+    
     float3 n = normalize(Input.normalWS);
     float3 l = normalize(DirLightDirection) * -1.0f;
     float ndotl = dot(n, l);
     float3 color = WaterColor.xyz * ndotl;
-
+    
     float3 view = normalize(CameraPosition - Input.posWS.xyz);
     float t = 1.0f - pow(saturate(dot(n, view)), 2.0f);
     t = remap(t, 0.0f, 1.0f, 0.25f, 0.9f);

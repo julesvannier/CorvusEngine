@@ -36,6 +36,7 @@ struct DomainOut
     float4 pos : SV_POSITION;
     float3 posWS : TEXCOORD0;
     float3 normalWS : NORMAL;
+    float2 uv : TEXCOORD1;
 };
 
 #define NUM_WAVES 3
@@ -87,6 +88,7 @@ DomainOut Main(PatchTess patchTess, float2 uv : SV_DomainLocation, const OutputP
     dout.pos = mul(dout.pos, ViewProj);
     dout.posWS = p;
     dout.normalWS = normal;
+    dout.uv = uv;
     
     return dout;
 }

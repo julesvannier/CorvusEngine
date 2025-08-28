@@ -1,4 +1,5 @@
 ﻿#include "WaterRenderPass.h"
+#include "Image.h"
 
 void WaterRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
 {
@@ -27,6 +28,16 @@ void WaterRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int wi
 
     m_waterConstantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
     renderer->CreateConstantBuffer(m_waterConstantBuffer);
+
+    Uploader uploader = renderer->CreateUploader();
+    
+    Image normalImg;
+    normalImg.LoadImageFromFile("Assets/waterNM1.png");
+    m_normalMap = renderer->CreateTexture(normalImg.Width, normalImg.Height, TextureFormat::RGBA8, TextureType::ShaderResource);
+    renderer->CreateShaderResourceView(m_normalMap);
+    uploader.CopyHostToDeviceTexture(normalImg, m_normalMap);
+    
+    renderer->FlushUploader(uploader);
 }
 
 void WaterRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
@@ -93,8 +104,9 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
     commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer);
     commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
     commandList->BindGraphicsConstantBuffer(m_waterConstantBuffer, 2);
+    // commandList->BindGraphicsSampler(m_textureSampler, 3);
+    // commandList->BindGraphicsShaderResource(m_normalMap, 4);
     // commandList->BindGraphicsShaderResource(globalPassData.EnviroMaps.SkyBox, 3);
-    // commandList->BindGraphicsSampler(m_textureSampler, 4);
     
     for(const auto renderMeshData : renderMeshesData)
     {
