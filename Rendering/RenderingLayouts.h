@@ -33,9 +33,13 @@ struct WaterConstantBuffer
     float Roughness = 0.08f;
     float Reflectance = 0.55f;
     float NormalScrollSpeed = 0.01f;
+    // 16 bytes boundary 
     float NormalTilingFactor = 3.6f;
     float NormalTilingFactor2 = 1.5f;
     float Padding[2];
+    // 16 bytes boundary 
+    DirectX::XMFLOAT4X4 View; // TODO pass view & proj separately inside SceneConstantBuffer
+    DirectX::XMFLOAT4X4 Proj; // TODO pass view & proj separately inside SceneConstantBuffer
 };
 
 struct SceneConstantBuffer

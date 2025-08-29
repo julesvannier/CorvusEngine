@@ -95,6 +95,8 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
 
     WaterConstantBuffer waterCb;
     waterCb = globalPassData.WaterParams;
+    DirectX::XMStoreFloat4x4(&waterCb.View, view);
+    DirectX::XMStoreFloat4x4(&waterCb.Proj, proj);
 
     void* data2;
     m_waterConstantBuffer->Map(0, 0, &data2);

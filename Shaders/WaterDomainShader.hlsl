@@ -24,6 +24,8 @@ cbuffer WaterCBuf : register(b2)
     float NormalTilingFactor;
     float NormalTilingFactor2;
     float2 Padding3;
+    row_major float4x4 View; // TODO pass view & proj separately inside SceneConstantBuffer
+    row_major float4x4 Proj; // TODO pass view & proj separately inside SceneConstantBuffer
 }
 
 struct HullOut
@@ -40,11 +42,12 @@ struct PatchTess
 struct DomainOut
 {
     float4 pos : SV_POSITION;
-    float3 posWS : TEXCOORD0;
+    float4 posWS : TEXCOORD0;
+    float4 posView : TEXCOORD1;
+    float2 uv : TEXCOORD2;
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
     float3 binormal : BINORMAL;
-    float2 uv : TEXCOORD1;
 };
 
 #define NUM_WAVES 3
@@ -93,8 +96,9 @@ DomainOut Main(PatchTess patchTess, float2 uv : SV_DomainLocation, const OutputP
 
     DomainOut dout;
     dout.pos = float4(p, 1.0f);
-    dout.pos = mul(dout.pos, ViewProj);
-    dout.posWS = p;
+    dout.posWS = dout.pos;
+    dout.posView = mul(dout.pos, View); // To view space and storing it for SSR later
+    dout.pos = mul(dout.posView, Proj);
     dout.normal = normal;
     dout.tangent = tangent_x;
     dout.binormal = tangent_z;

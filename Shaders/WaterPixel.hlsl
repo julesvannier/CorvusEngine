@@ -26,6 +26,8 @@ cbuffer WaterCBuf : register(b2)
     float NormalTilingFactor;
     float NormalTilingFactor2;
     float2 Padding3;
+    row_major float4x4 View;
+    row_major float4x4 Proj;
 }
 
 SamplerState Sampler : register(s3);
@@ -34,12 +36,13 @@ Texture2D NormalMap2 : register(t5);
 
 struct PixelIn
 {
-    float4 Position : SV_POSITION;
-    float3 posWS : TEXCOORD0;
+    float4 pos : SV_POSITION;
+    float4 posWS : TEXCOORD0;
+    float4 posView : TEXCOORD1;
+    float2 uv : TEXCOORD2;
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
     float3 binormal : BINORMAL;
-    float2 uv : TEXCOORD1;
 };
 
 float remap(float value, float inMin, float inMax, float outMin, float outMax)
@@ -64,6 +67,7 @@ float4 Main(PixelIn Input) : SV_Target
     normal = normalize(normal);
 
     float3 l = normalize(DirLightDirection) * -1.0f;
+
     float3 view = normalize(CameraPosition - Input.posWS.xyz);
     float3 h = normalize(l + view);
 
@@ -85,7 +89,7 @@ float4 Main(PixelIn Input) : SV_Target
     float t = 1.0f - pow(saturate(dot(n, view)), 2.0f); // Using n over normal here bc I think it looks better
     t = remap(t, 0.0f, 1.0f, 0.25f, 0.9f);
 
-    float3 finalColor = diffuseColor + specularFactor;
+    float3 finalColor = (diffuseColor + specularFactor) * DirLightIntensity;
     
     return float4(finalColor, t);
 }
