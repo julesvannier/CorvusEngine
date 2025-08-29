@@ -92,7 +92,7 @@ private:
     float m_defaultLightLinearAttenuation = 0.1f;
     float m_defaultLightQuadraticAttenuation = 0.02f;
 
-    WaterParams m_waterSettings;
+    WaterConstantBuffer m_waterSettings;
 
     int m_shadowMapResolution = 2048;
     bool m_enableShadows = false;

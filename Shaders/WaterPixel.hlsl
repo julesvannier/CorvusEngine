@@ -18,10 +18,14 @@ cbuffer CBuf : register(b0)
 cbuffer WaterCBuf : register(b2)
 {
     float4 WaterColor;
+    float4 WaterColor2;
     float WavesScalar;
+    float Roughness;
+    float Reflectance;
     float NormalScrollSpeed;
     float NormalTilingFactor;
     float NormalTilingFactor2;
+    float2 Padding3;
 }
 
 SamplerState Sampler : register(s3);
@@ -63,19 +67,20 @@ float4 Main(PixelIn Input) : SV_Target
     float3 view = normalize(CameraPosition - Input.posWS.xyz);
     float3 h = normalize(l + view);
 
-    float roughness = 0.08f;
-    float reflectance = 0.55f;
-    
     float ndotl = dot(normal, l);
-    float3 f0 = 0.16f * reflectance * reflectance;
+    float3 f0 = 0.16f * Reflectance * Reflectance;
 
-    float normalDistribution = DistributionGGX(normal, h, roughness);
+    float normalDistribution = DistributionGGX(normal, h, Roughness);
     float3 fresnelReflectance = FresnelShlick(f0, view, h);
-    float geometryTerm = GeometrySmith(roughness, normal, view, l);
+    float geometryTerm = GeometrySmith(Roughness, normal, view, l);
 
     float3 specularFactor = (geometryTerm * normalDistribution) * fresnelReflectance * 125.0f * ndotl;
 
-    float3 diffuseColor = WaterColor.xyz * ndotl;
+    float ndotup = saturate(dot(normal, float3(0.0f, 1.0f, 0.0f)));
+    ndotup = saturate(pow(ndotup, 5.0f));
+
+    float3 waterColor = lerp(WaterColor2.xyz, WaterColor.xyz, ndotup);
+    float3 diffuseColor = waterColor * ndotl;
 
     float t = 1.0f - pow(saturate(dot(n, view)), 2.0f); // Using n over normal here bc I think it looks better
     t = remap(t, 0.0f, 1.0f, 0.25f, 0.9f);

@@ -689,14 +689,25 @@ void CorvusEditor::RenderUI(float width, float height)
         {
             ImGui::Begin("Water Settings");
             ImGui::SliderFloat("Waves Intensity", &m_waterSettings.WavesScalar, 0.0f, 2.0f);
+            ImGui::SliderFloat("Roughness", &m_waterSettings.Roughness, 0.0f, 0.1f);
+            ImGui::SliderFloat("Reflectance", &m_waterSettings.Reflectance, 0.0f, 1.0f);
+            ImGui::Text("Colors");
+            ImGui::Spacing();
+            {
+                float color[4] = { m_waterSettings.WaterColor.x, m_waterSettings.WaterColor.y, m_waterSettings.WaterColor.z, m_waterSettings.WaterColor.w };
+                ImGui::ColorEdit4("Water Color", color, ImGuiColorEditFlags_AlphaBar);
+                m_waterSettings.WaterColor = { color[0], color[1], color[2], color[3] };
+            }
+            {
+                float color[4] = { m_waterSettings.WaterColor2.x, m_waterSettings.WaterColor2.y, m_waterSettings.WaterColor2.z, m_waterSettings.WaterColor2.w };
+                ImGui::ColorEdit4("Water Color 2", color, ImGuiColorEditFlags_AlphaBar);
+                m_waterSettings.WaterColor2 = { color[0], color[1], color[2], color[3] };
+            }
             ImGui::Text("Normal Maps");
             ImGui::Spacing();
             ImGui::SliderFloat("Normal Scroll Speed", &m_waterSettings.NormalScrollSpeed, 0.0f, 0.2f);
             ImGui::SliderFloat("Normal Tiling", &m_waterSettings.NormalTilingFactor, 1.0f, 10.0f);
             ImGui::SliderFloat("Normal Tiling 2", &m_waterSettings.NormalTilingFactor2, 1.0f, 10.0f);
-            float color[4] = { m_waterSettings.WaterColor.x, m_waterSettings.WaterColor.y, m_waterSettings.WaterColor.z, m_waterSettings.WaterColor.w };
-            ImGui::ColorEdit4("Water Color", color, ImGuiColorEditFlags_AlphaBar);
-            m_waterSettings.WaterColor = { color[0], color[1], color[2], color[3] };
             ImGui::End();
         }
 

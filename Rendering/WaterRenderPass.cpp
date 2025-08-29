@@ -94,11 +94,7 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
     m_sceneConstantBuffer->Unmap(0, 0);
 
     WaterConstantBuffer waterCb;
-    waterCb.WaterColor = globalPassData.WaterParams.WaterColor;
-    waterCb.WavesScalar = globalPassData.WaterParams.WavesScalar;
-    waterCb.NormalScrollSpeed = globalPassData.WaterParams.NormalScrollSpeed;
-    waterCb.NormalTilingFactor = globalPassData.WaterParams.NormalTilingFactor;
-    waterCb.NormalTilingFactor2 = globalPassData.WaterParams.NormalTilingFactor2;
+    waterCb = globalPassData.WaterParams;
 
     void* data2;
     m_waterConstantBuffer->Map(0, 0, &data2);

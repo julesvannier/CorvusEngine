@@ -16,8 +16,14 @@
 cbuffer WaterCBuf : register(b2)
 {
     float4 WaterColor;
+    float4 WaterColor2;
     float WavesScalar;
-    float Paddin2[3];
+    float Roughness;
+    float Reflectance;
+    float NormalScrollSpeed;
+    float NormalTilingFactor;
+    float NormalTilingFactor2;
+    float2 Padding3;
 }
 
 struct HullOut
