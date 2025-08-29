@@ -689,6 +689,7 @@ void CorvusEditor::RenderUI(float width, float height)
         {
             ImGui::Begin("Water Settings");
             ImGui::SliderFloat("Waves Intensity", &m_waterSettings.WavesScalar, 0.0f, 2.0f);
+            ImGui::SliderFloat("Normal Scroll Speed", &m_waterSettings.NormalScrollSpeed, 0.0f, 0.2f);
             float color[4] = { m_waterSettings.WaterColor.x, m_waterSettings.WaterColor.y, m_waterSettings.WaterColor.z, m_waterSettings.WaterColor.w };
             ImGui::ColorEdit4("Water Color", color, ImGuiColorEditFlags_AlphaBar);
             m_waterSettings.WaterColor = { color[0], color[1], color[2], color[3] };

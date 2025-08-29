@@ -35,7 +35,9 @@ struct DomainOut
 {
     float4 pos : SV_POSITION;
     float3 posWS : TEXCOORD0;
-    float3 normalWS : NORMAL;
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
+    float3 binormal : BINORMAL;
     float2 uv : TEXCOORD1;
 };
 
@@ -87,7 +89,9 @@ DomainOut Main(PatchTess patchTess, float2 uv : SV_DomainLocation, const OutputP
     dout.pos = float4(p, 1.0f);
     dout.pos = mul(dout.pos, ViewProj);
     dout.posWS = p;
-    dout.normalWS = normal;
+    dout.normal = normal;
+    dout.tangent = tangent_x;
+    dout.binormal = tangent_z;
     dout.uv = uv;
     
     return dout;

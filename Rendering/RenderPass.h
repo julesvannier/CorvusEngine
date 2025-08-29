@@ -35,6 +35,7 @@ struct WaterParams
 {
     DirectX::XMFLOAT4 WaterColor = { 28.0f/255.0f, 127.0f/255.0f, 230.0f/255.0f, 0.65f };
     float WavesScalar = 0.042f;
+    float NormalScrollSpeed = 0.01f;
 };
 
 struct GlobalPassData

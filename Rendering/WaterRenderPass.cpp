@@ -36,6 +36,12 @@ void WaterRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int wi
     m_normalMap = renderer->CreateTexture(normalImg.Width, normalImg.Height, TextureFormat::RGBA8, TextureType::ShaderResource);
     renderer->CreateShaderResourceView(m_normalMap);
     uploader.CopyHostToDeviceTexture(normalImg, m_normalMap);
+
+    Image normalImg2;
+    normalImg2.LoadImageFromFile("Assets/waterNM2.png");
+    m_normalMap2 = renderer->CreateTexture(normalImg2.Width, normalImg2.Height, TextureFormat::RGBA8, TextureType::ShaderResource);
+    renderer->CreateShaderResourceView(m_normalMap2);
+    uploader.CopyHostToDeviceTexture(normalImg2, m_normalMap2);
     
     renderer->FlushUploader(uploader);
 }
@@ -90,6 +96,7 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
     WaterConstantBuffer waterCb;
     waterCb.WaterColor = globalPassData.WaterParams.WaterColor;
     waterCb.WavesScalar = globalPassData.WaterParams.WavesScalar;
+    waterCb.NormalScrollSpeed = globalPassData.WaterParams.NormalScrollSpeed;
 
     void* data2;
     m_waterConstantBuffer->Map(0, 0, &data2);
@@ -104,9 +111,10 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
     commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer);
     commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
     commandList->BindGraphicsConstantBuffer(m_waterConstantBuffer, 2);
-    // commandList->BindGraphicsSampler(m_textureSampler, 3);
-    // commandList->BindGraphicsShaderResource(m_normalMap, 4);
-    // commandList->BindGraphicsShaderResource(globalPassData.EnviroMaps.SkyBox, 3);
+    commandList->BindGraphicsSampler(m_textureSampler, 3);
+    commandList->BindGraphicsShaderResource(m_normalMap, 4);
+    commandList->BindGraphicsShaderResource(m_normalMap2, 5);
+    // commandList->BindGraphicsShaderResource(globalPassData.EnviroMaps.SkyBox, ?);
     
     for(const auto renderMeshData : renderMeshesData)
     {
