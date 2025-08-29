@@ -30,7 +30,8 @@ struct WaterConstantBuffer
     DirectX::XMFLOAT4 WaterColor = { 0.0f, 0.0f, 255.0f, 0.6f };
     float WavesScalar = 1.0f;
     float NormalScrollSpeed = 0.01f;
-    float Padding[2];
+    float NormalTilingFactor = 1.0f;
+    float NormalTilingFactor2 = 1.0f;
 };
 
 struct SceneConstantBuffer

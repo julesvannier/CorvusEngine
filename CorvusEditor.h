@@ -85,7 +85,7 @@ private:
     float m_moveSpeed = 18.0f;
     bool m_mouseLocked = true;
 
-    float m_dirLightDirection[3] = { 1.0f, -1.0f, -1.0f };
+    float m_dirLightDirection[3] = { -1.0f, -1.0f, 1.0f };
     float m_dirLightIntensity = 1.0;
 
     float m_defaultLightConstAttenuation = 0.65f;
@@ -95,7 +95,7 @@ private:
     WaterParams m_waterSettings;
 
     int m_shadowMapResolution = 2048;
-    bool m_enableShadows = true;
+    bool m_enableShadows = false;
     bool m_enableSSAO = false;
     bool m_enableSkyBox = true;
     bool m_enablePointLights = false;
