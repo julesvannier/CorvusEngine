@@ -691,6 +691,8 @@ void CorvusEditor::RenderUI(float width, float height)
             ImGui::SliderFloat("Waves Intensity", &m_waterSettings.WavesScalar, 0.0f, 1.0f);
             ImGui::SliderFloat("Roughness", &m_waterSettings.Roughness, 0.0f, 0.1f);
             ImGui::SliderFloat("Reflectance", &m_waterSettings.Reflectance, 0.0f, 1.0f);
+            ImGui::SliderFloat("SSR Intensity", &m_waterSettings.SSRIntensity, 0.0f, 5.0f);
+            ImGui::SliderFloat("Enviro Intensity", &m_waterSettings.EnviroIntensity, 0.0f, 1.0f);
             ImGui::Text("Colors");
             ImGui::Spacing();
             {

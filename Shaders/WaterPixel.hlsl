@@ -25,7 +25,8 @@ cbuffer WaterCBuf : register(b2)
     float NormalScrollSpeed;
     float NormalTilingFactor;
     float NormalTilingFactor2;
-    float2 Padding3;
+    float SSRIntensity;
+    float EnviroIntensity;
     row_major float4x4 View;
     row_major float4x4 Proj;
 }
@@ -86,42 +87,22 @@ float4 Main(PixelIn Input) : SV_Target
     
     float3 specularFactor = (geometryTerm * normalDistribution) * fresnelReflectance * 125.0f * ndotl;
 
-    // view -> ndc -> texcoords
-    // float4 posNDC = mul(float4(Input.posView.xyz, 1.0f), Proj);
-    // if (posNDC.w < EPSILON)
-    //     posNDC.w = EPSILON;
-    //
-    // posNDC.xy /= posNDC.w;
-    // posNDC.xy = float2(posNDC.x, -posNDC.y) * 0.5 + 0.5;
-    //
-    // float sceneDepth = Depth.Sample(Sampler, posNDC.xy).r;
-
-    // view space pos
-    // float4 clipSpacePosition = float4(posNDC.xy * 2.0 - 1.0, sceneDepth, 1.0);
-    // clipSpacePosition.y *= -1.0;
-    //
-    // float4 worldSpacePosition = mul(clipSpacePosition, InvViewProj);
-    // worldSpacePosition /= worldSpacePosition.w;
-    //
-    // float4 viewSpacePosition = mul(worldSpacePosition, View);
-
-    // float3 viewDir = -normalize(Input.posView.xyz);
-
     float3 r  = normalize(reflect(-view, normal));
 
-    float3 cubeMapColor = CubeMap.Sample(Sampler, r).xyz;
+    float3 cubeMapColor = CubeMap.Sample(Sampler, r).xyz * EnviroIntensity;
 
-    float3 normalVS = normalize(mul(float4(n, 0.0f), View).xyz);
+    float3 normalVS = normalize(mul(float4(normal, 0.0f), View).xyz);
     float3 viewDirVS = -normalize(Input.posView.xyz);
     float3 reflectionVS = normalize(reflect(-viewDirVS, normalVS));
 
-    float forwardStepsMax = 25.0f;
-    float backwardStepsMax = 15.0f;
+    float forwardStepsMax = 20.0f;
+    float backwardStepsMax = 10.0f;
     float stepCount = 0.0f;
     float forwardStepsCount = 0.0f;
-    float forwardStepLength = 0.1f;
+    float forwardStepLength = 0.5f;
     float3 rayMarchPosition = Input.posView.xyz;
     float4 rayMarchTexPosition = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float sceneZ = 0.0f;
 
     while (stepCount < forwardStepsMax)
     {
@@ -144,9 +125,9 @@ float4 Main(PixelIn Input) : SV_Target
         
         float4 viewSpacePosition = mul(worldSpacePosition, View); // World back to View
 
-        float sceneZ = viewSpacePosition.z;
+        sceneZ = viewSpacePosition.z;
 
-        if (sceneZ >= rayMarchPosition.z)
+        if (sceneZ <= rayMarchPosition.z)
         {
             forwardStepsCount = stepCount;
             stepCount = forwardStepsMax;
@@ -181,9 +162,9 @@ float4 Main(PixelIn Input) : SV_Target
         
             float4 viewSpacePosition = mul(worldSpacePosition, View); // World back to View
 
-            float sceneZ = viewSpacePosition.z;
+            sceneZ = viewSpacePosition.z;
 
-            if (sceneZ >= rayMarchPosition.z)
+            if (sceneZ > rayMarchPosition.z)
             {
                 stepCount = backwardStepsMax;
             }
@@ -196,27 +177,37 @@ float4 Main(PixelIn Input) : SV_Target
 
     float3 ssrNormal = normalize(Normal.Sample(Sampler, rayMarchTexPosition.xy).xyz);
     float3 ssrColor = Albedo.Sample(Sampler, rayMarchTexPosition.xy).xyz;
-    float ssrFactor = (1.0f - abs(dot(n, view))) * (1.0f - forwardStepsCount / forwardStepsMax) * (1.0f - saturate(dot(ssrNormal, n /* TODO use normal instead of n */)));
+    ssrColor = ssrColor * SSRIntensity;
+    float ssrFactor = (1.0f - abs(dot(n, view)))
+                    * (1.0f - forwardStepsCount / forwardStepsMax)
+                    * (1.0f - saturate(dot(ssrNormal, normal))
+                    * (1.0 / (1.0 + abs(sceneZ - rayMarchPosition.z) * 20.0f)));
 
-    float3 col = lerp(float3(0.0f, 0.0f, 0.0f), ssrColor, ssrFactor);
+    if (SSRIntensity <= 0.0f)
+        ssrFactor = 0.0f;
+
+    float3 reflectionColor = lerp(cubeMapColor, ssrColor, ssrFactor);
 
     float ndotup = saturate(dot(normal, float3(0.0f, 1.0f, 0.0f)));
     ndotup = saturate(pow(ndotup, 5.0f));
     
     float3 waterColor = lerp(WaterColor2.xyz, WaterColor.xyz, ndotup);
-    float3 diffuseColor = waterColor * ndotl;
+
+    float3 color = lerp(waterColor, reflectionColor, ssrFactor);
+    
+    float3 diffuseColor = color * ndotl;
     
     float t = 1.0f - pow(saturate(dot(n, view)), 2.0f); // Using n over normal here bc I think it looks better
-    t = remap(t, 0.0f, 1.0f, 0.25f, 0.9f);
-    
-    float3 finalColor = (diffuseColor + specularFactor + (cubeMapColor * 0.24f)) * DirLightIntensity;
+    t = remap(t, 0.0f, 1.0f, 0.55f, 0.92f);
+
+    float3 finalColor = (diffuseColor + specularFactor + cubeMapColor) * DirLightIntensity;
 
     switch (Mode)
     {
     case 0:
         return float4(finalColor, t);
     case 1:
-        return float4(ssrColor, 1.0f);
+        return float4(reflectionColor, t);
     case 2:
         return float4(ssrNormal, 1.0f);
     case 3:
