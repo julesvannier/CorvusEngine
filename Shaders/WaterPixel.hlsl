@@ -107,7 +107,7 @@ float4 Main(PixelIn Input) : SV_Target
 
     // float3 viewDir = -normalize(Input.posView.xyz);
 
-    float3 r  = normalize(reflect(-view, n /* TODO use normal instead of n */));
+    float3 r  = normalize(reflect(-view, normal));
 
     float3 cubeMapColor = CubeMap.Sample(Sampler, r).xyz;
 
@@ -209,7 +209,7 @@ float4 Main(PixelIn Input) : SV_Target
     float t = 1.0f - pow(saturate(dot(n, view)), 2.0f); // Using n over normal here bc I think it looks better
     t = remap(t, 0.0f, 1.0f, 0.25f, 0.9f);
     
-    float3 finalColor = (diffuseColor + specularFactor) * DirLightIntensity;
+    float3 finalColor = (diffuseColor + specularFactor + (cubeMapColor * 0.24f)) * DirLightIntensity;
 
     switch (Mode)
     {
