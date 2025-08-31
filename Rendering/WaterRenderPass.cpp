@@ -52,9 +52,7 @@ void WaterRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int widt
 
 void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTargetInfo)
 {
-    // Prepass to list all Opacity values
     bool foundWaterMesh = false;
-    std::vector<float> opacityData;
     for (const auto renderMeshData : renderMeshesData)
     {
         auto& material = renderMeshData.Material;
@@ -62,7 +60,6 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
         if (!material.IsWater)
             continue;
 
-        opacityData.emplace_back(material.Opacity);
         foundWaterMesh = true;
     }
 
@@ -114,7 +111,9 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
     commandList->BindGraphicsSampler(m_textureSampler, 3);
     commandList->BindGraphicsShaderResource(m_normalMap, 4);
     commandList->BindGraphicsShaderResource(m_normalMap2, 5);
-    // commandList->BindGraphicsShaderResource(globalPassData.GBuffer.DepthBuffer, 5);
+    commandList->BindGraphicsShaderResource(globalPassData.GBuffer.DepthBuffer, 6);
+    commandList->BindGraphicsShaderResource(globalPassData.GBuffer.AlbedoRenderTarget, 7);
+    commandList->BindGraphicsShaderResource(globalPassData.GBuffer.NormalRenderTarget, 8);
     // commandList->BindGraphicsShaderResource(globalPassData.EnviroMaps.SkyBox, ?);
     
     for(const auto renderMeshData : renderMeshesData)
