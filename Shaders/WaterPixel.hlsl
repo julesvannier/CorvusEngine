@@ -36,6 +36,7 @@ Texture2D NormalMap2 : register(t5);
 Texture2D Depth : register(t6);
 Texture2D Albedo : register(t7);
 Texture2D Normal : register(t8);
+TextureCube CubeMap : register(t9);
 
 struct PixelIn
 {
@@ -108,17 +109,23 @@ float4 Main(PixelIn Input) : SV_Target
 
     float3 r  = normalize(reflect(-view, n /* TODO use normal instead of n */));
 
-    float forwardStepsMax = 10.0f;
-    float backwardStepsMax = 5.0f;
+    float3 cubeMapColor = CubeMap.Sample(Sampler, r).xyz;
+
+    float3 normalVS = normalize(mul(float4(n, 0.0f), View).xyz);
+    float3 viewDirVS = -normalize(Input.posView.xyz);
+    float3 reflectionVS = normalize(reflect(-viewDirVS, normalVS));
+
+    float forwardStepsMax = 25.0f;
+    float backwardStepsMax = 15.0f;
     float stepCount = 0.0f;
-    float forwardStepsCount = forwardStepsMax;
-    float forwardStepLength = 0.25f;
+    float forwardStepsCount = 0.0f;
+    float forwardStepLength = 0.1f;
     float3 rayMarchPosition = Input.posView.xyz;
     float4 rayMarchTexPosition = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
     while (stepCount < forwardStepsMax)
     {
-        rayMarchPosition += r * forwardStepLength;
+        rayMarchPosition += reflectionVS * forwardStepLength;
         rayMarchTexPosition = mul(float4(rayMarchPosition, 1.0f), Proj); // View to NDC
 
         if (rayMarchTexPosition.w < EPSILON)
@@ -129,8 +136,8 @@ float4 Main(PixelIn Input) : SV_Target
         
         float sceneDepth = Depth.Sample(Sampler, rayMarchTexPosition.xy).r;
 
-        float4 clipSpacePosition = float4(rayMarchTexPosition.xy /* * 2.0 - 1.0 */, sceneDepth, 1.0);
-        // clipSpacePosition.y *= -1.0;
+        float4 clipSpacePosition = float4(rayMarchTexPosition.xy * 2.0 - 1.0, sceneDepth, 1.0);
+        clipSpacePosition.y *= -1.0;
         
         float4 worldSpacePosition = mul(clipSpacePosition, InvViewProj); // NDC to World
         worldSpacePosition /= worldSpacePosition.w;
@@ -155,7 +162,7 @@ float4 Main(PixelIn Input) : SV_Target
         stepCount = 0.0f;
         while (stepCount < backwardStepsMax)
         {
-            rayMarchPosition -= r * forwardStepLength / backwardStepsMax;
+            rayMarchPosition -= reflectionVS * forwardStepLength / backwardStepsMax;
             rayMarchTexPosition = mul(float4(rayMarchPosition, 1.0f), Proj); // View to NDC
 
             if (rayMarchTexPosition.w < EPSILON)
@@ -166,8 +173,8 @@ float4 Main(PixelIn Input) : SV_Target
         
             float sceneDepth = Depth.Sample(Sampler, rayMarchTexPosition.xy).r;
 
-            float4 clipSpacePosition = float4(rayMarchTexPosition.xy /* * 2.0 - 1.0 */, sceneDepth, 1.0);
-            // clipSpacePosition.y *= -1.0;
+            float4 clipSpacePosition = float4(rayMarchTexPosition.xy * 2.0 - 1.0, sceneDepth, 1.0);
+            clipSpacePosition.y *= -1.0;
         
             float4 worldSpacePosition = mul(clipSpacePosition, InvViewProj); // NDC to World
             worldSpacePosition /= worldSpacePosition.w;
@@ -189,16 +196,6 @@ float4 Main(PixelIn Input) : SV_Target
 
     float3 ssrNormal = normalize(Normal.Sample(Sampler, rayMarchTexPosition.xy).xyz);
     float3 ssrColor = Albedo.Sample(Sampler, rayMarchTexPosition.xy).xyz;
-
-    float4 posNDC = mul(float4(Input.posView.xyz, 1.0f), Proj);
-    if (posNDC.w < EPSILON)
-        posNDC.w = EPSILON;
-    
-    posNDC.xy /= posNDC.w;
-    posNDC.xy = float2(posNDC.x, -posNDC.y) * 0.5 + 0.5;
-
-    ssrColor = Albedo.Sample(Sampler, posNDC.xy).xyz;
-    
     float ssrFactor = (1.0f - abs(dot(n, view))) * (1.0f - forwardStepsCount / forwardStepsMax) * (1.0f - saturate(dot(ssrNormal, n /* TODO use normal instead of n */)));
 
     float3 col = lerp(float3(0.0f, 0.0f, 0.0f), ssrColor, ssrFactor);
@@ -217,11 +214,13 @@ float4 Main(PixelIn Input) : SV_Target
     switch (Mode)
     {
     case 0:
-        return float4(ssrColor, 1.0f);
-    case 1:
         return float4(finalColor, t);
+    case 1:
+        return float4(ssrColor, 1.0f);
     case 2:
         return float4(ssrNormal, 1.0f);
+    case 3:
+        return float4(cubeMapColor, 1.0f);
     default: ;
     }
     

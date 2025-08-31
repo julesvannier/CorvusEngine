@@ -32,7 +32,7 @@ void SkyBoxRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int w
     m_sphereMesh = std::make_shared<RenderItem>();
     m_sphereMesh->ImportMesh(renderer, "Assets/sphere.gltf");
 
-    m_enviroMaps.SkyBox = renderer->LoadTextureCube(L"Assets/skymap.dds");
+    m_enviroMaps.SkyBox = renderer->LoadTextureCube(L"Assets/skybox1.dds");
 
     m_enviroMaps.DiffuseIrradianceMap = renderer->CreateTextureCube(128, 128, TextureFormat::RGBA8);
     m_enviroMaps.PrefilterEnvMap = renderer->CreateTextureCube(512, 512, TextureFormat::RGBA8);

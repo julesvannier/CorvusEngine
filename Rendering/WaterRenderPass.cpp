@@ -114,7 +114,7 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
     commandList->BindGraphicsShaderResource(globalPassData.GBuffer.DepthBuffer, 6);
     commandList->BindGraphicsShaderResource(globalPassData.GBuffer.AlbedoRenderTarget, 7);
     commandList->BindGraphicsShaderResource(globalPassData.GBuffer.NormalRenderTarget, 8);
-    // commandList->BindGraphicsShaderResource(globalPassData.EnviroMaps.SkyBox, ?);
+    commandList->BindGraphicsShaderResource(globalPassData.EnviroMaps.SkyBox, 9);
     
     for(const auto renderMeshData : renderMeshesData)
     {
