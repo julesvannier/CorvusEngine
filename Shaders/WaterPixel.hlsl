@@ -98,7 +98,7 @@ float4 Main(PixelIn Input) : SV_Target
     float forwardStepsMax = 20.0f;
     float backwardStepsMax = 10.0f;
     float stepCount = 0.0f;
-    float forwardStepsCount = 0.0f;
+    float forwardStepsCount = forwardStepsMax;
     float forwardStepLength = 0.5f;
     float3 rayMarchPosition = Input.posView.xyz;
     float4 rayMarchTexPosition = float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -198,7 +198,7 @@ float4 Main(PixelIn Input) : SV_Target
     float3 diffuseColor = color * ndotl;
     
     float t = 1.0f - pow(saturate(dot(n, view)), 2.0f); // Using n over normal here bc I think it looks better
-    t = remap(t, 0.0f, 1.0f, 0.55f, 0.92f);
+    t = remap(t, 0.0f, 1.0f, 0.55f, 0.95f);
 
     float3 finalColor = (diffuseColor + specularFactor + cubeMapColor) * DirLightIntensity;
 
