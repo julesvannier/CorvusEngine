@@ -108,12 +108,13 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
     commandList->SetTopology(Topology::QuadPatch);
     commandList->BindGraphicsPipeline(m_waterTesselationPipeline);
     commandList->ImageBarrier(renderTargetInfo.RenderTexture, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer);
+    commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer /* TODO is it an issue ? I think it's fine */);
     commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
     commandList->BindGraphicsConstantBuffer(m_waterConstantBuffer, 2);
     commandList->BindGraphicsSampler(m_textureSampler, 3);
     commandList->BindGraphicsShaderResource(m_normalMap, 4);
     commandList->BindGraphicsShaderResource(m_normalMap2, 5);
+    // commandList->BindGraphicsShaderResource(globalPassData.GBuffer.DepthBuffer, 5);
     // commandList->BindGraphicsShaderResource(globalPassData.EnviroMaps.SkyBox, ?);
     
     for(const auto renderMeshData : renderMeshesData)
