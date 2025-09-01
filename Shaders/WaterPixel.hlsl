@@ -56,6 +56,11 @@ float remap(float value, float inMin, float inMax, float outMin, float outMax)
     return outMin + (value - inMin) * (outMax - outMin) / (inMax - inMin);
 }
 
+bool ValidScreenUV(float2 uv)
+{
+    return uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0;
+}
+
 static float EPSILON = 0.000001f;
 
 float4 Main(PixelIn Input) : SV_Target
@@ -92,7 +97,7 @@ float4 Main(PixelIn Input) : SV_Target
 
     float3 cubeMapColor = CubeMap.Sample(Sampler, r).xyz * EnviroIntensity;
 
-    float3 normalSSR = normal;
+    float3 normalSSR = n;
 
     float3 normalVS = normalize(mul(float4(normalSSR, 0.0f), View).xyz);
     float3 viewDirVS = -normalize(Input.posView.xyz);
@@ -100,13 +105,14 @@ float4 Main(PixelIn Input) : SV_Target
 
     float forwardStepsMax = SSRSettings.x;
     float backwardStepsMax = SSRSettings.y;
-    float stepCount = 0.0f;
+    float stepCount = 1.0f; // avoid self collision
     float forwardStepsCount = forwardStepsMax;
     float forwardStepLength = SSRSettings.z;
     float3 rayMarchPosition = Input.posView.xyz;
     float4 rayMarchTexPosition = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float4 viewSpacePosition = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float sceneZ = 0.0f;
+    bool rayHit = false;
 
     while (stepCount < forwardStepsMax)
     {
@@ -118,6 +124,12 @@ float4 Main(PixelIn Input) : SV_Target
         
         rayMarchTexPosition.xy /= rayMarchTexPosition.w;
         rayMarchTexPosition.xy = float2(rayMarchTexPosition.x, -rayMarchTexPosition.y) * 0.5 + 0.5; // NDC to TexCoords
+
+        if (!ValidScreenUV(rayMarchTexPosition.xy))
+        {
+            rayHit = false;
+            break;
+        }
         
         float sceneDepth = Depth.Sample(Sampler, rayMarchTexPosition.xy).r;
 
@@ -135,6 +147,7 @@ float4 Main(PixelIn Input) : SV_Target
         {
             forwardStepsCount = stepCount;
             stepCount = forwardStepsMax;
+            rayHit = true;
         }
         else
         {
@@ -142,8 +155,9 @@ float4 Main(PixelIn Input) : SV_Target
         }
     }
 
-    if (forwardStepsCount < forwardStepsMax)
+    if (forwardStepsCount < forwardStepsMax && rayHit)
     {
+        rayHit = false;
         stepCount = 0.0f;
         while (stepCount < backwardStepsMax)
         {
@@ -155,6 +169,12 @@ float4 Main(PixelIn Input) : SV_Target
         
             rayMarchTexPosition.xy /= rayMarchTexPosition.w;
             rayMarchTexPosition.xy = float2(rayMarchTexPosition.x, -rayMarchTexPosition.y) * 0.5 + 0.5; // NDC to TexCoords
+
+            if (!ValidScreenUV(rayMarchTexPosition.xy))
+            {
+                rayHit = false;
+                break;
+            }
         
             float sceneDepth = Depth.Sample(Sampler, rayMarchTexPosition.xy).r;
 
@@ -171,6 +191,7 @@ float4 Main(PixelIn Input) : SV_Target
             if (sceneZ > rayMarchPosition.z)
             {
                 stepCount = backwardStepsMax;
+                rayHit = true;
             }
             else
             {
@@ -179,21 +200,26 @@ float4 Main(PixelIn Input) : SV_Target
         }
     }
 
-    float3 ssrNormal = normalize(Normal.Sample(Sampler, rayMarchTexPosition.xy).xyz);
-    ssrNormal = normalize(mul(float4(ssrNormal, 0.0f), View).xyz);
-    float3 ssrColor = Albedo.Sample(Sampler, rayMarchTexPosition.xy).xyz;
-    ssrColor = ssrColor * SSRIntensity;
-
-    float4 pNDC = mul(float4(Input.posView.xyz, 1.0f), Proj);
-    pNDC.xy /= pNDC.w;
-    float dScreen = 1.0f - saturate((abs(pNDC.x) + abs(pNDC.y)));
+    float3 ssrColor = float3(0, 0, 0);
+    float ssrFactor = 0.0f;
     
-    float ssrFactor = (1.0f - abs(dot(normalSSR, view))) // TODO use n here instead of normalSSR, looks better
-                    * (1.0f - forwardStepsCount / forwardStepsMax)
-                    * (1.0f - saturate(dot(ssrNormal, normalSSR))
-                    /* * dScreen */
+    if (rayHit && ValidScreenUV(rayMarchTexPosition.xy))
+    {
+        float3 ssrNormal = normalize(Normal.Sample(Sampler, rayMarchTexPosition.xy).xyz);
+        ssrNormal = normalize(mul(float4(ssrNormal, 0.0f), View).xyz);
+        ssrColor = Albedo.Sample(Sampler, rayMarchTexPosition.xy).xyz;
+        ssrColor = ssrColor * SSRIntensity;
+
+        float2 edgeFade = smoothstep(0.0, 0.1, rayMarchTexPosition.xy) * smoothstep(1.0, 0.9, rayMarchTexPosition.xy);
+        float edgeFadeAmount = edgeFade.x * edgeFade.y;
+    
+        ssrFactor = (1.0f - saturate(dot(n, view)))
+                    * edgeFadeAmount
+                    * (1.0f - saturate(dot(ssrNormal, normalVS)))
+                    /* * (1.0f - forwardStepsCount / forwardStepsMax) */
                     /* * 1.0f - saturate(length(viewSpacePosition.xyz - rayMarchPosition.xyz) / SSRSettings.w) */
-                    /* * (1.0 / (1.0 + abs(sceneZ - rayMarchPosition.z) * SSRSettings.w)) */);
+                    /* * (1.0 / (1.0 + abs(sceneZ - rayMarchPosition.z) * SSRSettings.w))) */;
+    }
 
     if (SSRIntensity <= 0.0f)
         ssrFactor = 0.0f;
