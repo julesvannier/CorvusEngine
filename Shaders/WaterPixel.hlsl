@@ -27,6 +27,7 @@ cbuffer WaterCBuf : register(b2)
     float NormalTilingFactor2;
     float SSRIntensity;
     float EnviroIntensity;
+    float4 SSRSettings;
     row_major float4x4 View;
     row_major float4x4 Proj;
 }
@@ -91,17 +92,20 @@ float4 Main(PixelIn Input) : SV_Target
 
     float3 cubeMapColor = CubeMap.Sample(Sampler, r).xyz * EnviroIntensity;
 
-    float3 normalVS = normalize(mul(float4(normal, 0.0f), View).xyz);
+    float3 normalSSR = normal;
+
+    float3 normalVS = normalize(mul(float4(normalSSR, 0.0f), View).xyz);
     float3 viewDirVS = -normalize(Input.posView.xyz);
     float3 reflectionVS = normalize(reflect(-viewDirVS, normalVS));
 
-    float forwardStepsMax = 20.0f;
-    float backwardStepsMax = 10.0f;
+    float forwardStepsMax = SSRSettings.x;
+    float backwardStepsMax = SSRSettings.y;
     float stepCount = 0.0f;
     float forwardStepsCount = forwardStepsMax;
-    float forwardStepLength = 0.5f;
+    float forwardStepLength = SSRSettings.z;
     float3 rayMarchPosition = Input.posView.xyz;
     float4 rayMarchTexPosition = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float4 viewSpacePosition = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float sceneZ = 0.0f;
 
     while (stepCount < forwardStepsMax)
@@ -123,7 +127,7 @@ float4 Main(PixelIn Input) : SV_Target
         float4 worldSpacePosition = mul(clipSpacePosition, InvViewProj); // NDC to World
         worldSpacePosition /= worldSpacePosition.w;
         
-        float4 viewSpacePosition = mul(worldSpacePosition, View); // World back to View
+        viewSpacePosition = mul(worldSpacePosition, View); // World back to View
 
         sceneZ = viewSpacePosition.z;
 
@@ -160,7 +164,7 @@ float4 Main(PixelIn Input) : SV_Target
             float4 worldSpacePosition = mul(clipSpacePosition, InvViewProj); // NDC to World
             worldSpacePosition /= worldSpacePosition.w;
         
-            float4 viewSpacePosition = mul(worldSpacePosition, View); // World back to View
+            viewSpacePosition = mul(worldSpacePosition, View); // World back to View
 
             sceneZ = viewSpacePosition.z;
 
@@ -176,24 +180,30 @@ float4 Main(PixelIn Input) : SV_Target
     }
 
     float3 ssrNormal = normalize(Normal.Sample(Sampler, rayMarchTexPosition.xy).xyz);
+    ssrNormal = normalize(mul(float4(ssrNormal, 0.0f), View).xyz);
     float3 ssrColor = Albedo.Sample(Sampler, rayMarchTexPosition.xy).xyz;
     ssrColor = ssrColor * SSRIntensity;
-    float ssrFactor = (1.0f - abs(dot(n, view)))
+
+    float4 pNDC = mul(float4(Input.posView.xyz, 1.0f), Proj);
+    pNDC.xy /= pNDC.w;
+    float dScreen = 1.0f - saturate((abs(pNDC.x) + abs(pNDC.y)));
+    
+    float ssrFactor = (1.0f - abs(dot(normalSSR, view))) // TODO use n here instead of normalSSR, looks better
                     * (1.0f - forwardStepsCount / forwardStepsMax)
-                    * (1.0f - saturate(dot(ssrNormal, normal))
-                    * (1.0 / (1.0 + abs(sceneZ - rayMarchPosition.z) * 20.0f)));
+                    * (1.0f - saturate(dot(ssrNormal, normalSSR))
+                    /* * dScreen */
+                    /* * 1.0f - saturate(length(viewSpacePosition.xyz - rayMarchPosition.xyz) / SSRSettings.w) */
+                    /* * (1.0 / (1.0 + abs(sceneZ - rayMarchPosition.z) * SSRSettings.w)) */);
 
     if (SSRIntensity <= 0.0f)
         ssrFactor = 0.0f;
-
-    float3 reflectionColor = lerp(cubeMapColor, ssrColor, ssrFactor);
 
     float ndotup = saturate(dot(normal, float3(0.0f, 1.0f, 0.0f)));
     ndotup = saturate(pow(ndotup, 5.0f));
     
     float3 waterColor = lerp(WaterColor2.xyz, WaterColor.xyz, ndotup);
 
-    float3 color = lerp(waterColor, reflectionColor, ssrFactor);
+    float3 color = lerp(waterColor, ssrColor, ssrFactor);
     
     float3 diffuseColor = color * ndotl;
     
@@ -207,11 +217,7 @@ float4 Main(PixelIn Input) : SV_Target
     case 0:
         return float4(finalColor, t);
     case 1:
-        return float4(reflectionColor, t);
-    case 2:
-        return float4(ssrNormal, 1.0f);
-    case 3:
-        return float4(cubeMapColor, 1.0f);
+        return float4(ssrColor, 1.0f);
     default: ;
     }
     

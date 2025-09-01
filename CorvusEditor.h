@@ -95,7 +95,7 @@ private:
     WaterConstantBuffer m_waterSettings;
 
     int m_shadowMapResolution = 2048;
-    bool m_enableShadows = true;
+    bool m_enableShadows = false;
     bool m_enableSSAO = false;
     bool m_enableSkyBox = true;
     bool m_enablePointLights = false;

@@ -74,8 +74,9 @@ CorvusEditor::CorvusEditor()
     m_scene = std::make_shared<Scene>("DemoScene");
 
     // ----------------------------------------------- ASSETS DEMO ------------------------------------------------
-    
+
     constexpr bool assetsDemo = true;
+    constexpr bool waterDemo = true;
     if(assetsDemo)
     {
         AddModelToScene("SciFiHelmet", "Assets/SciFiHelmet.gltf", "Assets/SciFiHelmet_BaseColor.png",
@@ -96,12 +97,23 @@ CorvusEditor::CorvusEditor()
         AddModelToScene("Dragon", "Assets/dragon.obj", "", "", "",
             { -10.2f, -0.9f, 0.0f }, {}, { 0.25f, 0.25f, 0.25f });
 
-        AddModelToScene("Sphere", "Assets/sphere.gltf", "", "", "",
+        if (waterDemo)
+        {
+            AddModelToScene("Cube", "Assets/cube.obj", "", "", "",
+            { -13.5f, 1.0f, 0.0f }, {}, { 1.0f, 1.0f, 1.0f }, false);
+        }
+        else
+        {
+            AddModelToScene("Sphere", "Assets/sphere.gltf", "", "", "",
             { -13.5f, 0.0f, 0.0f }, {}, { 1.0f, 1.0f, 1.0f }, true);
+        }
+        
 
-        AddWaterToScene({ -5.0f, -0.1f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
+        if (waterDemo)
+            AddWaterToScene({ -6.0f, -0.1f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
 
-        AddModelToScene("Cube", "Assets/cube.obj", "", "", "",
+        if (!waterDemo)
+            AddModelToScene("Cube", "Assets/cube.obj", "", "", "",
             { -5.0f, -2.25f, 0.0f }, {}, { 12.0f, 0.5f, 6.8f });
     }
     
@@ -691,7 +703,15 @@ void CorvusEditor::RenderUI(float width, float height)
             ImGui::SliderFloat("Waves Intensity", &m_waterSettings.WavesScalar, 0.0f, 1.0f);
             ImGui::SliderFloat("Roughness", &m_waterSettings.Roughness, 0.0f, 0.1f);
             ImGui::SliderFloat("Reflectance", &m_waterSettings.Reflectance, 0.0f, 1.0f);
+            ImGui::Text("SSR");
+            ImGui::Spacing();
             ImGui::SliderFloat("SSR Intensity", &m_waterSettings.SSRIntensity, 0.0f, 5.0f);
+            {
+                float color[4] = { m_waterSettings.SSRSettings.x, m_waterSettings.SSRSettings.y, m_waterSettings.SSRSettings.z, m_waterSettings.SSRSettings.w };
+                ImGui::InputFloat4("SSR Settings", color);
+                m_waterSettings.SSRSettings = { color[0], color[1], color[2], color[3] };
+            }
+            ImGui::Spacing();
             ImGui::SliderFloat("Enviro Intensity", &m_waterSettings.EnviroIntensity, 0.0f, 1.0f);
             ImGui::Text("Colors");
             ImGui::Spacing();
