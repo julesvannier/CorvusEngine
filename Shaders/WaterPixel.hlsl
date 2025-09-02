@@ -216,9 +216,8 @@ float4 Main(PixelIn Input) : SV_Target
         ssrFactor = (1.0f - saturate(dot(n, view)))
                     * edgeFadeAmount
                     * (1.0f - saturate(dot(ssrNormal, normalVS)))
-                    /* * (1.0f - forwardStepsCount / forwardStepsMax) */
-                    /* * 1.0f - saturate(length(viewSpacePosition.xyz - rayMarchPosition.xyz) / SSRSettings.w) */
-                    /* * (1.0 / (1.0 + abs(sceneZ - rayMarchPosition.z) * SSRSettings.w))) */;
+                    * (1.0f - saturate((1.0f + abs(rayMarchPosition.z - sceneZ)) / SSRSettings.w))
+                    * (1.0f - forwardStepsCount / forwardStepsMax);
     }
 
     if (SSRIntensity <= 0.0f)
