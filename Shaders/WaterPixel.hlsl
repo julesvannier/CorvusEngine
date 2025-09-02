@@ -97,7 +97,7 @@ float4 Main(PixelIn Input) : SV_Target
 
     float3 cubeMapColor = CubeMap.Sample(Sampler, r).xyz * EnviroIntensity;
 
-    float3 normalSSR = n;
+    float3 normalSSR = normal;
 
     float3 normalVS = normalize(mul(float4(normalSSR, 0.0f), View).xyz);
     float3 viewDirVS = -normalize(Input.posView.xyz);
@@ -113,6 +113,7 @@ float4 Main(PixelIn Input) : SV_Target
     float4 viewSpacePosition = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float sceneZ = 0.0f;
     bool rayHit = false;
+    float depthTolerance = 0.001f;
 
     while (stepCount < forwardStepsMax)
     {
@@ -143,7 +144,7 @@ float4 Main(PixelIn Input) : SV_Target
 
         sceneZ = viewSpacePosition.z;
 
-        if (sceneZ <= rayMarchPosition.z)
+        if (sceneZ <= rayMarchPosition.z + depthTolerance)
         {
             forwardStepsCount = stepCount;
             stepCount = forwardStepsMax;
@@ -188,7 +189,7 @@ float4 Main(PixelIn Input) : SV_Target
 
             sceneZ = viewSpacePosition.z;
 
-            if (sceneZ > rayMarchPosition.z)
+            if (sceneZ > rayMarchPosition.z - depthTolerance)
             {
                 stepCount = backwardStepsMax;
                 rayHit = true;
@@ -200,7 +201,7 @@ float4 Main(PixelIn Input) : SV_Target
         }
     }
 
-    float3 ssrColor = float3(0, 0, 0);
+    float3 ssrColor = float3(0.0f, 0.0f, 0.0f);
     float ssrFactor = 0.0f;
     
     if (rayHit && ValidScreenUV(rayMarchTexPosition.xy))
@@ -208,20 +209,24 @@ float4 Main(PixelIn Input) : SV_Target
         float3 ssrNormal = normalize(Normal.Sample(Sampler, rayMarchTexPosition.xy).xyz);
         ssrNormal = normalize(mul(float4(ssrNormal, 0.0f), View).xyz);
         ssrColor = Albedo.Sample(Sampler, rayMarchTexPosition.xy).xyz;
-        ssrColor = ssrColor * SSRIntensity;
 
-        float2 edgeFade = smoothstep(0.0, 0.1, rayMarchTexPosition.xy) * smoothstep(1.0, 0.9, rayMarchTexPosition.xy);
-        float edgeFadeAmount = edgeFade.x * edgeFade.y;
+        if (ssrColor.x > 0.01f && ssrColor.y > 0.01f && ssrColor.z > 0.01f)
+        {
+            float2 edgeFade = smoothstep(0.0f, 0.1f, rayMarchTexPosition.xy) * smoothstep(1.0f, 0.9f, rayMarchTexPosition.xy);
+            float edgeFadeAmount = edgeFade.x * edgeFade.y;
     
-        ssrFactor = (1.0f - saturate(dot(n, view)))
-                    * edgeFadeAmount
-                    * (1.0f - saturate(dot(ssrNormal, normalVS)))
-                    * (1.0f - saturate((1.0f + abs(rayMarchPosition.z - sceneZ)) / SSRSettings.w))
-                    * (1.0f - forwardStepsCount / forwardStepsMax);
+            ssrFactor = (1.0f - saturate(dot(n, view)))
+                        * edgeFadeAmount
+                        * (1.0f - saturate(dot(ssrNormal, normalVS)))
+                        * (1.0f / (1.0f + abs(sceneZ - rayMarchPosition.z) * SSRSettings.w))
+                        * (1.0f - forwardStepsCount / forwardStepsMax);
+        }
     }
 
     if (SSRIntensity <= 0.0f)
         ssrFactor = 0.0f;
+
+    ssrColor = ssrColor * SSRIntensity;
 
     float ndotup = saturate(dot(normal, float3(0.0f, 1.0f, 0.0f)));
     ndotup = saturate(pow(ndotup, 5.0f));
@@ -229,7 +234,7 @@ float4 Main(PixelIn Input) : SV_Target
     float3 waterColor = lerp(WaterColor2.xyz, WaterColor.xyz, ndotup);
 
     float3 color = lerp(waterColor, ssrColor, ssrFactor);
-    
+
     float3 diffuseColor = color * ndotl;
     
     float t = 1.0f - pow(saturate(dot(n, view)), 2.0f); // Using n over normal here bc I think it looks better
@@ -237,14 +242,16 @@ float4 Main(PixelIn Input) : SV_Target
 
     float3 finalColor = (diffuseColor + specularFactor + cubeMapColor) * DirLightIntensity;
 
-    switch (Mode)
-    {
-    case 0:
-        return float4(finalColor, t);
-    case 1:
-        return float4(ssrColor, 1.0f);
-    default: ;
-    }
+    // switch (Mode)
+    // {
+    // case 0:
+    //     return float4(finalColor, t);
+    // case 1:
+    //     return float4(ssrFactor, ssrFactor, ssrFactor, 1.0f);
+    // case 2:
+    //     return float4(ssrColor, 1.0f);
+    // default: ;
+    // }
     
     return float4(finalColor, t);
 }
