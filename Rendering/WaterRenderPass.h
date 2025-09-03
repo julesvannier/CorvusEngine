@@ -15,4 +15,5 @@ private:
     std::shared_ptr<Sampler> m_textureSampler;
     std::shared_ptr<Texture> m_normalMap;
     std::shared_ptr<Texture> m_normalMap2;
+    std::shared_ptr<Texture> m_noiseTex;
 };

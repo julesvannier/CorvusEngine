@@ -30,6 +30,12 @@ void WaterRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int wi
     renderer->CreateConstantBuffer(m_waterConstantBuffer);
 
     Uploader uploader = renderer->CreateUploader();
+
+    Image noiseImg;
+    noiseImg.LoadImageFromFile("Assets/waterNoise.png");
+    m_noiseTex = renderer->CreateTexture(noiseImg.Width, noiseImg.Height, TextureFormat::R8Norm, TextureType::ShaderResource);
+    renderer->CreateShaderResourceView(m_noiseTex);
+    uploader.CopyHostToDeviceTexture(noiseImg, m_noiseTex);
     
     Image normalImg;
     normalImg.LoadImageFromFile("Assets/waterNM1.png");
@@ -115,6 +121,7 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
     commandList->BindGraphicsShaderResource(globalPassData.GBuffer.AlbedoRenderTarget, 7);
     commandList->BindGraphicsShaderResource(globalPassData.GBuffer.NormalRenderTarget, 8);
     commandList->BindGraphicsShaderResource(globalPassData.EnviroMaps.SkyBox, 9);
+    commandList->BindGraphicsShaderResource(m_noiseTex, 10);
     
     for(const auto renderMeshData : renderMeshesData)
     {

@@ -29,19 +29,20 @@ struct WaterConstantBuffer
 {
     DirectX::XMFLOAT4 WaterColor = { 13.0f/255.0f, 154.0f/255.0f, 182.0f/255.0f, 0.65f };
     DirectX::XMFLOAT4 WaterColor2 = { 0.0f/255.0f, 255.0f/255.0f, 199.0f/255.0f, 0.65f };
-    float WavesScalar = 0.026f;
+    float WavesScalar = 0.042f;
     float Roughness = 0.08f;
     float Reflectance = 0.55f;
     float NormalScrollSpeed = 0.02f;
     // 16 bytes boundary 
     float NormalTilingFactor = 2.2f;
-    float NormalTilingFactor2 = 1.2f;
-    float SSRIntensity = 1.12f;
+    float NormalTilingFactor2 = 1.8f;
+    float SSRIntensity = 1.05f;
     float EnviroIntensity = 0.18f;
     // 16 bytes boundary
     float DistortionFactor = 0.06f;
     float SpecularIntensity = 125.0f;
-    float Padding[2];
+    float SpecularNoiseTilingFactor = 0.32f;
+    float Padding;
     // 16 bytes boundary
     DirectX::XMFLOAT4 SSRSettings = { 40.0f /* forward steps max */, 20.0f /* backward steps max */, 0.2f /* forward step length */, 60.0f /* depth fade */ };
     DirectX::XMFLOAT4X4 View; // TODO pass view & proj separately inside SceneConstantBuffer

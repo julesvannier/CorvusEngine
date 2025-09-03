@@ -29,7 +29,8 @@ cbuffer WaterCBuf : register(b2)
     float EnviroIntensity;
     float DistortionFactor;
     float SpecularIntensity;
-    float2 Padding3;
+    float SpecularNoiseTilingFactor;
+    float Padding3;
     float4 SSRSettings;
     row_major float4x4 View;
     row_major float4x4 Proj;
@@ -42,6 +43,7 @@ Texture2D Depth : register(t6);
 Texture2D Albedo : register(t7);
 Texture2D Normal : register(t8);
 TextureCube CubeMap : register(t9);
+Texture2D NoiseTex : register(t10);
 
 struct PixelIn
 {
@@ -96,8 +98,12 @@ float4 Main(PixelIn Input) : SV_Target
     float normalDistribution = DistributionGGX(normal, h, Roughness);
     float3 fresnelReflectance = FresnelShlick(f0, view, h);
     float geometryTerm = GeometrySmith(Roughness, normal, view, l);
+
+    float specularNoise = NoiseTex.Sample(Sampler, normalMapUV * SpecularNoiseTilingFactor).r;
+    specularNoise *= NoiseTex.Sample(Sampler, normalMapUV2 * SpecularNoiseTilingFactor).r; 
+    specularNoise *= NoiseTex.Sample(Sampler, Input.uv * SpecularNoiseTilingFactor).r; 
     
-    float3 specularFactor = (geometryTerm * normalDistribution) * fresnelReflectance * SpecularIntensity * ndotl;
+    float3 specularFactor = (geometryTerm * normalDistribution) * fresnelReflectance * SpecularIntensity * ndotl * specularNoise;
 
     // Enviro reflections
     float3 r  = normalize(reflect(-view, normal));
@@ -253,7 +259,7 @@ float4 Main(PixelIn Input) : SV_Target
     float3 refractionColor = Albedo.Sample(Sampler, refractionTexCoords.xy).xyz;
 
     // Opacity
-    float t = 1.0f - pow(saturate(dot(n, view)), 2.0f); // Using n over normal here bc I think it looks better
+    float t = 1.0f - pow(saturate(dot(normal, view)), 2.0f); // Using n over normal here is also possible
     t = remap(t, 0.0f, 1.0f, 0.55f, 0.95f);
 
     // Diffuse
@@ -269,17 +275,6 @@ float4 Main(PixelIn Input) : SV_Target
     float3 diffuseColor = color * ndotl;
 
     float3 finalColor = (diffuseColor + specularFactor + cubeMapColor) * DirLightIntensity;
-
-    switch (Mode)
-    {
-    case 0:
-        return float4(finalColor, 1.0f);
-    case 1:
-        return float4(refractionColor, 1.0f);
-    case 2:
-        return float4(ssrColor, 1.0f);
-    default: ;
-    }
     
-    return float4(finalColor, t);
+    return float4(finalColor, 1.0f /* transparency faked in distortions. Ugly with distortion + real obj under it */);
 }

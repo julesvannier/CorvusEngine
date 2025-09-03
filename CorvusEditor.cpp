@@ -85,17 +85,19 @@ CorvusEditor::CorvusEditor()
     
         AddLightToScene({ -1.5f, 1.0f, 0.0f }, {}, true);
 
+        float helmetOffset = waterDemo ? 0.8f : 0.0f;
         AddModelToScene("DamagedHelmet", "Assets/DamagedHelmet.gltf", "Assets/DamagedHelmet_albedo.jpg",
             "Assets/DamagedHelmet_normal.jpg", "Assets/DamagedHelmet_metalRoughness.jpg",
-            { -3.0f, 0.0f, 0.0f }, { 90.0f, 0.0f, 0.0f });
+            { -3.0f, helmetOffset, 0.0f }, { 90.0f, 0.0f, 0.0f });
 
         AddLightToScene({ -4.5f, 1.0f, 0.0f }, {}, true);
 
         AddModelToScene("Dragon", "Assets/dragon.obj", "", "", "",
             { -6.25f, -0.9f, 0.0f }, {}, { 0.25f, 0.25f, 0.25f });
 
+        float dragonOffset = waterDemo ? 0.0f : -0.9f;
         AddModelToScene("Dragon", "Assets/dragon.obj", "", "", "",
-            { -10.2f, -0.9f, 0.0f }, {}, { 0.25f, 0.25f, 0.25f });
+            { -10.2f, dragonOffset, 0.0f }, {}, { 0.25f, 0.25f, 0.25f });
 
         if (waterDemo)
         {
@@ -108,7 +110,6 @@ CorvusEditor::CorvusEditor()
             { -13.5f, 0.0f, 0.0f }, {}, { 1.0f, 1.0f, 1.0f }, true);
         }
         
-
         if (waterDemo)
             AddWaterToScene({ -6.0f, -0.1f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
 
@@ -120,7 +121,7 @@ CorvusEditor::CorvusEditor()
     // ----------------------------------------------- POINT LIGHTS DEMO ------------------------------------------------
 
     constexpr bool pointLightsDemo = false;
-    if(pointLightsDemo)
+    if(pointLightsDemo && !waterDemo)
     {
         m_dirLightIntensity = 0.1f;
         m_enableSkyBox = false;
@@ -704,6 +705,7 @@ void CorvusEditor::RenderUI(float width, float height)
             ImGui::SliderFloat("Roughness", &m_waterSettings.Roughness, 0.0f, 0.1f);
             ImGui::SliderFloat("Reflectance", &m_waterSettings.Reflectance, 0.0f, 1.0f);
             ImGui::SliderFloat("Specular Intensity", &m_waterSettings.SpecularIntensity, 0.0f, 200.0f);
+            ImGui::SliderFloat("Specular Tiling", &m_waterSettings.SpecularNoiseTilingFactor, 0.0f, 5.0f);
             ImGui::SliderFloat("Distortion Factor", &m_waterSettings.DistortionFactor, 0.0f, 0.1f);
             ImGui::Text("SSR");
             ImGui::Spacing();
