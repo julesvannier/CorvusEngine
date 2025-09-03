@@ -36,8 +36,12 @@ struct WaterConstantBuffer
     // 16 bytes boundary 
     float NormalTilingFactor = 2.2f;
     float NormalTilingFactor2 = 1.2f;
-    float SSRIntensity = 1.25f;
+    float SSRIntensity = 1.12f;
     float EnviroIntensity = 0.18f;
+    // 16 bytes boundary
+    float DistortionFactor = 0.06f;
+    float SpecularIntensity = 125.0f;
+    float Padding[2];
     // 16 bytes boundary
     DirectX::XMFLOAT4 SSRSettings = { 40.0f /* forward steps max */, 20.0f /* backward steps max */, 0.2f /* forward step length */, 60.0f /* depth fade */ };
     DirectX::XMFLOAT4X4 View; // TODO pass view & proj separately inside SceneConstantBuffer

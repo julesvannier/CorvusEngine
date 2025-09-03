@@ -27,6 +27,9 @@ cbuffer WaterCBuf : register(b2)
     float NormalTilingFactor2;
     float SSRIntensity;
     float EnviroIntensity;
+    float DistortionFactor;
+    float SpecularIntensity;
+    float2 Padding3;
     float4 SSRSettings;
     row_major float4x4 View;
     row_major float4x4 Proj;
@@ -67,7 +70,8 @@ float4 Main(PixelIn Input) : SV_Target
 {
     float3 n = normalize(Input.normal);
     float3x3 tbn = float3x3(normalize(Input.tangent), normalize(Input.binormal), n);
-    
+
+    // Scrolling normals
     float2 normalMapUV = Input.uv * NormalTilingFactor + Time * float2(1.0f, 0.0f) * NormalScrollSpeed; 
     float2 normalMapUV2 = Input.uv * NormalTilingFactor2 + Time * float2(0.0f, 1.0f) * NormalScrollSpeed; 
     
@@ -85,18 +89,21 @@ float4 Main(PixelIn Input) : SV_Target
     float3 h = normalize(l + view);
     
     float ndotl = dot(normal, l);
+
+    // Specular
     float3 f0 = 0.16f * Reflectance * Reflectance;
     
     float normalDistribution = DistributionGGX(normal, h, Roughness);
     float3 fresnelReflectance = FresnelShlick(f0, view, h);
     float geometryTerm = GeometrySmith(Roughness, normal, view, l);
     
-    float3 specularFactor = (geometryTerm * normalDistribution) * fresnelReflectance * 125.0f * ndotl;
+    float3 specularFactor = (geometryTerm * normalDistribution) * fresnelReflectance * SpecularIntensity * ndotl;
 
+    // Enviro reflections
     float3 r  = normalize(reflect(-view, normal));
-
     float3 cubeMapColor = CubeMap.Sample(Sampler, r).xyz * EnviroIntensity;
 
+    // SSR
     float3 normalSSR = normal;
 
     float3 normalVS = normalize(mul(float4(normalSSR, 0.0f), View).xyz);
@@ -228,6 +235,28 @@ float4 Main(PixelIn Input) : SV_Target
 
     ssrColor = ssrColor * SSRIntensity;
 
+    // Refraction distortion
+    float4 texCoords = mul(float4(Input.posView.xyz, 1.0f), Proj);
+    texCoords.xy /= texCoords.w;
+    texCoords.xy = float2(texCoords.x, -texCoords.y) * 0.5f + 0.5f;
+
+    float2 distortedTexCoords = texCoords.xy + (((normal.xz + normal.xy) * 0.5f) * DistortionFactor);
+    float distortedDepth = Depth.Sample(Sampler, distortedTexCoords).r;
+    
+    float4 clipSpacePosition = float4(distortedTexCoords.xy * 2.0 - 1.0, distortedDepth, 1.0);
+    clipSpacePosition.y *= -1.0;
+    float4 worldSpacePosition = mul(clipSpacePosition, InvViewProj);
+    worldSpacePosition /= worldSpacePosition.w;
+    
+    float2 refractionTexCoords = (worldSpacePosition.y < Input.posWS.y + depthTolerance) ? distortedTexCoords : texCoords.xy;
+
+    float3 refractionColor = Albedo.Sample(Sampler, refractionTexCoords.xy).xyz;
+
+    // Opacity
+    float t = 1.0f - pow(saturate(dot(n, view)), 2.0f); // Using n over normal here bc I think it looks better
+    t = remap(t, 0.0f, 1.0f, 0.55f, 0.95f);
+
+    // Diffuse
     float ndotup = saturate(dot(normal, float3(0.0f, 1.0f, 0.0f)));
     ndotup = saturate(pow(ndotup, 5.0f));
     
@@ -235,23 +264,22 @@ float4 Main(PixelIn Input) : SV_Target
 
     float3 color = lerp(waterColor, ssrColor, ssrFactor);
 
+    color = lerp(refractionColor, color, t);
+
     float3 diffuseColor = color * ndotl;
-    
-    float t = 1.0f - pow(saturate(dot(n, view)), 2.0f); // Using n over normal here bc I think it looks better
-    t = remap(t, 0.0f, 1.0f, 0.55f, 0.95f);
 
     float3 finalColor = (diffuseColor + specularFactor + cubeMapColor) * DirLightIntensity;
 
-    // switch (Mode)
-    // {
-    // case 0:
-    //     return float4(finalColor, t);
-    // case 1:
-    //     return float4(ssrFactor, ssrFactor, ssrFactor, 1.0f);
-    // case 2:
-    //     return float4(ssrColor, 1.0f);
-    // default: ;
-    // }
+    switch (Mode)
+    {
+    case 0:
+        return float4(finalColor, 1.0f);
+    case 1:
+        return float4(refractionColor, 1.0f);
+    case 2:
+        return float4(ssrColor, 1.0f);
+    default: ;
+    }
     
     return float4(finalColor, t);
 }

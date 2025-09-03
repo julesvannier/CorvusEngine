@@ -25,6 +25,9 @@ cbuffer WaterCBuf : register(b2)
     float NormalTilingFactor2;
     float SSRIntensity;
     float EnviroIntensity;
+    float DistortionFactor;
+    float SpecularIntensity;
+    float2 Padding3;
     float4 SSRSettings;
     row_major float4x4 View; // TODO pass view & proj separately inside SceneConstantBuffer
     row_major float4x4 Proj; // TODO pass view & proj separately inside SceneConstantBuffer

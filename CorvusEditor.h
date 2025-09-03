@@ -82,7 +82,7 @@ private:
 
     float m_fov = 0.35f;
     float m_previousFov = m_fov;
-    float m_moveSpeed = 18.0f;
+    float m_moveSpeed = 12.0f;
     bool m_mouseLocked = true;
 
     float m_dirLightDirection[3] = { -0.85f, -1.0f, 0.65f };
