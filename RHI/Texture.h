@@ -24,7 +24,8 @@ enum class TextureFormat
     RGBA8SNorm = DXGI_FORMAT_R8G8B8A8_SNORM,
     R32Float = DXGI_FORMAT_R32_FLOAT,
     RG16Float = DXGI_FORMAT_R16G16_FLOAT,
-    R16Norm = DXGI_FORMAT_R16_UNORM
+    R16Norm = DXGI_FORMAT_R16_UNORM,
+    R8Norm = DXGI_FORMAT_R8_UNORM
 };
 
 class Texture 
