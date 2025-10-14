@@ -76,7 +76,7 @@ CorvusEditor::CorvusEditor()
     // ----------------------------------------------- ASSETS DEMO ------------------------------------------------
 
     constexpr bool assetsDemo = true;
-    constexpr bool waterDemo = true;
+    constexpr bool waterDemo = false;
     if(assetsDemo)
     {
         AddModelToScene("SciFiHelmet", "Assets/SciFiHelmet.gltf", "Assets/SciFiHelmet_BaseColor.png",

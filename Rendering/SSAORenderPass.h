@@ -18,9 +18,4 @@ private:
     std::shared_ptr<Texture> m_SSAOTexture;
     std::shared_ptr<Buffer> m_constantBuffer;
     std::shared_ptr<Sampler> m_sampler;
-    std::shared_ptr<Buffer> m_sampleKernelBuffer;
-    std::shared_ptr<Texture> m_noiseTexture;
-
-    DirectX::XMFLOAT3 m_sampleKernel[16] = {};
-    DirectX::XMFLOAT3 m_noiseTextureData[64] = {};
 };

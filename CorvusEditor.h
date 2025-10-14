@@ -96,7 +96,7 @@ private:
 
     int m_shadowMapResolution = 2048;
     bool m_enableShadows = true;
-    bool m_enableSSAO = false;
+    bool m_enableSSAO = true;
     bool m_enableSkyBox = true;
     bool m_enablePointLights = false;
     bool m_renderTransparentObjects = true;
