@@ -18,6 +18,9 @@ void SSAORenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int wid
 void SSAORenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
 {
     m_SSAOTexture.reset();
+
+    m_width = width;
+    m_height = height;
     
     m_SSAOTexture = renderer->CreateTexture(width, height, TextureFormat::R16Norm, TextureType::Storage);
     renderer->CreateUnorderedAccessView(m_SSAOTexture);
