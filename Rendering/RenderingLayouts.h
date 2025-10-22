@@ -104,5 +104,6 @@ struct ShadowMapConstantBuffer
 
 struct SSAOConstantBuffer
 {
-    float Value = 0.5f;
+    int Mode;
+    float Padding[3];
 };

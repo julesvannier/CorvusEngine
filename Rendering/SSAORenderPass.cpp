@@ -30,7 +30,7 @@ void SSAORenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width
 void SSAORenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
 {
     SSAOConstantBuffer constantBuffer;
-    constantBuffer.Value = 0.7f;
+    constantBuffer.Mode = globalPassData.ViewMode;
 
     void* data;
     m_constantBuffer->Map(0, 0, &data);
@@ -44,6 +44,8 @@ void SSAORenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const GlobalP
     commandList->BindComputeUnorderedAccessView(m_SSAOTexture, 0);
     commandList->BindComputeShaderResource(globalPassData.GBuffer.DepthBuffer, 1);
     commandList->BindComputeSampler(m_sampler, 2);
+    commandList->BindComputeConstantBuffer(m_constantBuffer, 3);
+    commandList->BindComputeShaderResource(globalPassData.GBuffer.NormalRenderTarget, 4);
     
     commandList->Dispatch(m_width / 32, m_height / 32, 6);
     
