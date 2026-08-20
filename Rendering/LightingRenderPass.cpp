@@ -69,8 +69,11 @@ void LightingRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Glo
         
     void* data;
     m_sceneConstantBuffer->Map(0, 0, &data);
-    memcpy(data, &cbuf, sizeof(SceneConstantBuffer));
-    m_sceneConstantBuffer->Unmap(0, 0);
+    if (data)
+    {
+        memcpy(data, &cbuf, sizeof(SceneConstantBuffer));
+        m_sceneConstantBuffer->Unmap(0, 0);
+    }
     
     auto commandList = renderer->GetCurrentCommandList();
     commandList->SetViewport(0, 0, globalPassData.ViewportSizeX, globalPassData.ViewportSizeY);
@@ -126,13 +129,19 @@ void LightingRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Glo
 
     void* dt;
     m_instancedLightsInstanceDataTransformBuffer->Map(0, 0, &dt);
-    memcpy(dt, instancesData.data(), sizeof(InstanceData) * globalPassData.PointLights.size());
-    m_instancedLightsInstanceDataTransformBuffer->Unmap(0, 0);
+    if (dt)
+    {
+        memcpy(dt, instancesData.data(), sizeof(InstanceData) * globalPassData.PointLights.size());
+        m_instancedLightsInstanceDataTransformBuffer->Unmap(0, 0);
+    }
 
     void* dt2;
     m_instancedLightsInstanceDataInfoBuffer->Map(0, 0, &dt2);
-    memcpy(dt2, globalPassData.PointLights.data(), sizeof(PointLight) * globalPassData.PointLights.size());
-    m_instancedLightsInstanceDataInfoBuffer->Unmap(0, 0);
+    if (dt2)
+    {
+        memcpy(dt2, globalPassData.PointLights.data(), sizeof(PointLight) * globalPassData.PointLights.size());
+        m_instancedLightsInstanceDataInfoBuffer->Unmap(0, 0);
+    }
 
     commandList->SetGraphicsShaderResource(m_instancedLightsInstanceDataTransformBuffer, 1);
     commandList->SetGraphicsShaderResource(m_instancedLightsInstanceDataInfoBuffer, 6);

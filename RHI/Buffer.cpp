@@ -77,6 +77,8 @@ void Buffer::CreateUnorderedAccessView(std::shared_ptr<Device> device, std::shar
 
 void Buffer::Map(int start, int end, void **data)
 {
+    *data = nullptr;
+
     D3D12_RANGE range;
     range.Begin = start;
     range.End = end;

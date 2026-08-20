@@ -76,16 +76,16 @@ private:
     float m_elapsedTime;
 
     Camera m_camera;
-    float m_cameraForward;
-    float m_cameraRight;
+    float m_cameraForward = 0.0f;
+    float m_cameraRight = 0.0f;
     float m_lastMousePos[2];
 
-    float m_fov = 0.35f;
+    float m_fov = 60.0f;
     float m_previousFov = m_fov;
-    float m_moveSpeed = 12.0f;
+    float m_moveSpeed = 18.0f;
     bool m_mouseLocked = true;
 
-    float m_dirLightDirection[3] = { -0.85f, -1.0f, 0.65f };
+    float m_dirLightDirection[3] = { -0.85f, -1.0f, -0.7f };
     float m_dirLightIntensity = 1.0;
 
     float m_defaultLightConstAttenuation = 0.65f;
@@ -96,11 +96,12 @@ private:
 
     int m_shadowMapResolution = 2048;
     bool m_enableShadows = true;
-    bool m_enableSSAO = true;
+    bool m_enableSSAO = false;
     bool m_enableSkyBox = true;
     bool m_enablePointLights = false;
     bool m_renderTransparentObjects = true;
     bool m_renderWater = true;
+    bool m_vsync = false;
 
     ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::TRANSLATE;
     ImGuizmo::MODE m_gizmoMode = ImGuizmo::WORLD;

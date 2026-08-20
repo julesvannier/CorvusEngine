@@ -34,8 +34,11 @@ void SSAORenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const GlobalP
 
     void* data;
     m_constantBuffer->Map(0, 0, &data);
-    memcpy(data, &constantBuffer, sizeof(SSAOConstantBuffer));
-    m_constantBuffer->Unmap(0, 0);
+    if (data)
+    {
+        memcpy(data, &constantBuffer, sizeof(SSAOConstantBuffer));
+        m_constantBuffer->Unmap(0, 0);
+    }
 
     auto commandList = renderer->GetCurrentCommandList();
 

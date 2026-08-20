@@ -72,8 +72,11 @@ void SkyBoxRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int w
         
         void* data;
         m_prefilterConstantBuffers[i]->Map(0, 0, &data);
-        memcpy(data, &cb, sizeof(PrefilterMapFilterSettings));
-        m_prefilterConstantBuffers[i]->Unmap(0, 0);
+        if (data)
+        {
+            memcpy(data, &cb, sizeof(PrefilterMapFilterSettings));
+            m_prefilterConstantBuffers[i]->Unmap(0, 0);
+        }
         
         cmdList->BindComputeConstantBuffer(m_prefilterConstantBuffers[i], 3);
         cmdList->BindComputeUnorderedAccessView(m_enviroMaps.PrefilterEnvMap, 0, i);
@@ -110,14 +113,18 @@ void SkyBoxRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Globa
 
     void* data;
     m_constantBuffer->Map(0, 0, &data);
-    memcpy(data, &constantBuffer, sizeof(SkyBoxConstantBuffer));
-    m_constantBuffer->Unmap(0, 0);
+    if (data)
+    {
+        memcpy(data, &constantBuffer, sizeof(SkyBoxConstantBuffer));
+        m_constantBuffer->Unmap(0, 0);
+    }
 
     auto commandList = renderer->GetCurrentCommandList();
 
     commandList->SetViewport(0, 0, globalPassData.ViewportSizeX, globalPassData.ViewportSizeY);
 
     commandList->ImageBarrier(renderTarget.RenderTexture, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    commandList->ImageBarrier(renderTarget.DepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
     commandList->BindRenderTargets({ renderTarget.RenderTexture }, renderTarget.DepthBuffer);
 
     commandList->SetTopology(Topology::TriangleList);
@@ -131,6 +138,7 @@ void SkyBoxRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Globa
     commandList->DrawIndexed(m_sphereMesh->GetPrimitives()[0].m_indexCount);
     
     commandList->ImageBarrier(renderTarget.RenderTexture, D3D12_RESOURCE_STATE_GENERIC_READ);
+    commandList->ImageBarrier(renderTarget.DepthBuffer, D3D12_RESOURCE_STATE_GENERIC_READ);
 }
 
 void SkyBoxRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)

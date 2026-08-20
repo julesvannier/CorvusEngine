@@ -93,8 +93,11 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
         
     void* data;
     m_sceneConstantBuffer->Map(0, 0, &data);
-    memcpy(data, &cbuf, sizeof(SceneConstantBuffer));
-    m_sceneConstantBuffer->Unmap(0, 0);
+    if (data)
+    {
+        memcpy(data, &cbuf, sizeof(SceneConstantBuffer));
+        m_sceneConstantBuffer->Unmap(0, 0);
+    }
 
     WaterConstantBuffer waterCb;
     waterCb = globalPassData.WaterParams;
@@ -103,15 +106,19 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
 
     void* data2;
     m_waterConstantBuffer->Map(0, 0, &data2);
-    memcpy(data2, &waterCb, sizeof(WaterConstantBuffer));
-    m_waterConstantBuffer->Unmap(0, 0);
+    if (data2)
+    {
+        memcpy(data2, &waterCb, sizeof(WaterConstantBuffer));
+        m_waterConstantBuffer->Unmap(0, 0);
+    }
 
     auto commandList = renderer->GetCurrentCommandList();
     
     commandList->SetTopology(Topology::QuadPatch);
     commandList->BindGraphicsPipeline(m_waterTesselationPipeline);
     commandList->ImageBarrier(renderTargetInfo.RenderTexture, D3D12_RESOURCE_STATE_RENDER_TARGET);
-    commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer /* TODO is it an issue ? I think it's fine */);
+    commandList->ImageBarrier(renderTargetInfo.DepthBuffer, D3D12_RESOURCE_STATES(D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+    commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer);
     commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
     commandList->BindGraphicsConstantBuffer(m_waterConstantBuffer, 2);
     commandList->BindGraphicsSampler(m_textureSampler, 3);
@@ -143,8 +150,11 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
 
         void* dt;
         renderMeshData.InstancesDataBuffer->Map(0, 0, &dt);
-        memcpy(dt, instancesData.data(), sizeof(InstanceData) * renderMeshData.InstancesTransforms.size());
-        renderMeshData.InstancesDataBuffer->Unmap(0, 0);
+        if (dt)
+        {
+            memcpy(dt, instancesData.data(), sizeof(InstanceData) * renderMeshData.InstancesTransforms.size());
+            renderMeshData.InstancesDataBuffer->Unmap(0, 0);
+        }
 
         commandList->SetGraphicsShaderResource(renderMeshData.InstancesDataBuffer, 1);
 
@@ -158,4 +168,5 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Global
     }
 
     commandList->ImageBarrier(renderTargetInfo.RenderTexture, D3D12_RESOURCE_STATE_GENERIC_READ);
+    commandList->ImageBarrier(renderTargetInfo.DepthBuffer, D3D12_RESOURCE_STATE_GENERIC_READ);
 }

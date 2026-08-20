@@ -63,8 +63,11 @@ void ShadowRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Globa
 
     void* data;
     m_constantBuffer->Map(0, 0, &data);
-    memcpy(data, &cbuf, sizeof(ShadowMapConstantBuffer));
-    m_constantBuffer->Unmap(0, 0);
+    if (data)
+    {
+        memcpy(data, &cbuf, sizeof(ShadowMapConstantBuffer));
+        m_constantBuffer->Unmap(0, 0);
+    }
     
     auto commandList = renderer->GetCurrentCommandList();
 
@@ -86,7 +89,7 @@ void ShadowRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Globa
             continue;
         
         std::vector<InstanceData> instancesData;
-        for(auto instanceTransform : renderMeshData.InstancesTransforms)
+        for(const auto& instanceTransform : renderMeshData.InstancesTransforms)
         {
             InstanceData instanceData;
             instanceData.WorldMat = instanceTransform;
@@ -99,8 +102,11 @@ void ShadowRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Globa
 
         void* dt;
         renderMeshData.InstancesDataBuffer->Map(0, 0, &dt);
-        memcpy(dt, instancesData.data(), sizeof(InstanceData) * renderMeshData.InstancesTransforms.size());
-        renderMeshData.InstancesDataBuffer->Unmap(0, 0);
+        if (dt)
+        {
+            memcpy(dt, instancesData.data(), sizeof(InstanceData) * renderMeshData.InstancesTransforms.size());
+            renderMeshData.InstancesDataBuffer->Unmap(0, 0);
+        }
 
         commandList->SetGraphicsShaderResource(renderMeshData.InstancesDataBuffer, 1);
 

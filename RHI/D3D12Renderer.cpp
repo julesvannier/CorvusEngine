@@ -94,7 +94,6 @@ D3D12Renderer::D3D12Renderer(HWND hwnd) : m_frameIndex(0)
         }
     }
 
-    ImGui_ImplWin32_EnableDpiAwareness();
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX12_Init(m_device->GetDevice(), FRAMES_IN_FLIGHT, DXGI_FORMAT_R8G8B8A8_UNORM, m_heaps.ShaderHeap->GetHeap(), m_fontDescriptor.CPU, m_fontDescriptor.GPU);
 }

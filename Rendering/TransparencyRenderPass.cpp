@@ -68,14 +68,18 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
         
     void* data;
     m_sceneConstantBuffer->Map(0, 0, &data);
-    memcpy(data, &cbuf, sizeof(SceneConstantBuffer));
-    m_sceneConstantBuffer->Unmap(0, 0);
+    if (data)
+    {
+        memcpy(data, &cbuf, sizeof(SceneConstantBuffer));
+        m_sceneConstantBuffer->Unmap(0, 0);
+    }
 
     auto commandList = renderer->GetCurrentCommandList();
     
     commandList->SetTopology(Topology::TriangleList);
     commandList->BindGraphicsPipeline(m_forwardTransparencyPipeline);
     commandList->ImageBarrier(renderTargetInfo.RenderTexture, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    commandList->ImageBarrier(renderTargetInfo.DepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
     commandList->BindRenderTargets({ renderTargetInfo.RenderTexture }, renderTargetInfo.DepthBuffer);
     commandList->BindGraphicsConstantBuffer(m_sceneConstantBuffer, 0);
     commandList->BindGraphicsSampler(m_textureSampler, 3);
@@ -84,8 +88,11 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
     
     void* opacityDt;
     m_opacityValuesBuffer->Map(0, 0, &opacityDt);
-    memcpy(opacityDt, opacityData.data(), sizeof(InstanceData) * renderMeshesData.size());
-    m_opacityValuesBuffer->Unmap(0, 0); 
+    if (opacityDt)
+    {
+        memcpy(opacityDt, opacityData.data(), sizeof(InstanceData) * renderMeshesData.size());
+        m_opacityValuesBuffer->Unmap(0, 0);
+    }
     
     commandList->SetGraphicsShaderResource(m_opacityValuesBuffer, 2);
 
@@ -109,8 +116,11 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
 
         void* dt;
         renderMeshData.InstancesDataBuffer->Map(0, 0, &dt);
-        memcpy(dt, instancesData.data(), sizeof(InstanceData) * renderMeshData.InstancesTransforms.size());
-        renderMeshData.InstancesDataBuffer->Unmap(0, 0);
+        if (dt)
+        {
+            memcpy(dt, instancesData.data(), sizeof(InstanceData) * renderMeshData.InstancesTransforms.size());
+            renderMeshData.InstancesDataBuffer->Unmap(0, 0);
+        }
 
         commandList->SetGraphicsShaderResource(renderMeshData.InstancesDataBuffer, 1);
 
@@ -133,4 +143,5 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const
     }
 
     commandList->ImageBarrier(renderTargetInfo.RenderTexture, D3D12_RESOURCE_STATE_GENERIC_READ);
+    commandList->ImageBarrier(renderTargetInfo.DepthBuffer, D3D12_RESOURCE_STATE_GENERIC_READ);
 }

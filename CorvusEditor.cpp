@@ -32,12 +32,15 @@ CorvusEditor::CorvusEditor()
     InputSystem::Get()->AddListener(this);
     InputSystem::Get()->ShowCursor(false);
 
-    int defaultWidth = 1380;
-    int defaultHeight = 960;
+    int defaultWidth = 1920;
+    int defaultHeight = 1080;
 
     m_window = std::make_shared<Window>(defaultWidth, defaultHeight, L"Corvus Editor");
     m_window->DefineOnResize([this](int width, int height)
     {
+        if (width == 0 || height == 0)
+            return;
+
         LOG(Debug, "Window resize !");
         m_renderer->Resize(width, height);
     });
@@ -198,7 +201,7 @@ void CorvusEditor::Run()
 
         if(m_fov != m_previousFov)
         {
-            m_camera.UpdatePerspectiveFOV(m_fov * 3.14159f, m_viewportCachedSize.x / m_viewportCachedSize.y);
+            m_camera.UpdatePerspectiveFOV(DirectX::XMConvertToRadians(m_fov), m_viewportCachedSize.x / m_viewportCachedSize.y);
             m_previousFov = m_fov;
         }
 
@@ -331,7 +334,7 @@ void CorvusEditor::Run()
 
         // m_renderer->WaitForGPU();
 
-        m_renderer->Present(false);
+        m_renderer->Present(m_vsync);
         m_renderer->EndFrame();
 
         m_window->BroadCast();
@@ -515,10 +518,11 @@ void CorvusEditor::RenderUI(float width, float height)
 
         ImGui::Begin("FrameRate");
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::Checkbox("VSync", &m_vsync);
         ImGui::End();
 
         ImGui::Begin("Debug");
-        ImGui::SliderFloat("FOV", &m_fov, 0.1f, 1.0f);
+        ImGui::SliderFloat("FOV", &m_fov, 30.0f, 100.0f);
         ImGui::SliderFloat("Move Speed", &m_moveSpeed, 1.0f, 40.0f);
         static const char* modes[] = { "Default", "Albedo", "Normal", "Depth", "WorldPosition", "MetallicRoughness", "Debug" };
         ImGui::Combo("View Mode", (int*)&m_viewMode, modes, 7);
@@ -678,23 +682,23 @@ void CorvusEditor::RenderUI(float width, float height)
         auto GBuffer = m_GBufferRenderPass->GetGBuffer();
         
         ImGui::Begin("Debug GBuffer");
-        ImGui::Image((ImTextureID)GBuffer.AlbedoRenderTarget->m_srvUav.GPU.ptr, ImVec2(320, 180));
-        ImGui::Image((ImTextureID)GBuffer.NormalRenderTarget->m_srvUav.GPU.ptr, ImVec2(320, 180));
-        ImGui::Image((ImTextureID)GBuffer.MetallicRoughnessRenderTarget->m_srvUav.GPU.ptr, ImVec2(320, 180));
-        ImGui::Image((ImTextureID)GBuffer.DepthBuffer->m_srvUav.GPU.ptr, ImVec2(320, 180));
+        ImGui::Image((ImTextureID)GBuffer.AlbedoRenderTarget->m_srvUav.GPU.ptr, ImVec2(540, 320));
+        ImGui::Image((ImTextureID)GBuffer.NormalRenderTarget->m_srvUav.GPU.ptr, ImVec2(540, 320));
+        ImGui::Image((ImTextureID)GBuffer.MetallicRoughnessRenderTarget->m_srvUav.GPU.ptr, ImVec2(540, 320));
+        ImGui::Image((ImTextureID)GBuffer.DepthBuffer->m_srvUav.GPU.ptr, ImVec2(540, 320));
         ImGui::End();
 
         if(m_enableShadows)
         {
             ImGui::Begin("Debug Shadow Map");
-            ImGui::Image((ImTextureID)m_shadowRenderPass->GetShadowMap().DepthBuffer->m_srvUav.GPU.ptr, ImVec2(320, 320));
+            ImGui::Image((ImTextureID)m_shadowRenderPass->GetShadowMap().DepthBuffer->m_srvUav.GPU.ptr, ImVec2(540, 320));
             ImGui::End();
         }
 
         if(m_enableSSAO)
         {
             ImGui::Begin("Debug SSAO");
-            ImGui::Image((ImTextureID)m_SSAORenderPass->GetSSAOTexture()->m_srvUav.GPU.ptr, ImVec2(320, 180));
+            ImGui::Image((ImTextureID)m_SSAORenderPass->GetSSAOTexture()->m_srvUav.GPU.ptr, ImVec2(540, 320));
             ImGui::End();
         }
 
@@ -804,9 +808,11 @@ void CorvusEditor::OnKeyDown(int key)
 
 void CorvusEditor::OnKeyUp(int key)
 {
-    m_cameraForward = 0.0f;
-    m_cameraRight = 0.0f;
-    
+    if(key == 'Z' || key == 'S')
+        m_cameraForward = 0.0f;
+    else if(key == 'Q' || key == 'D')
+        m_cameraRight = 0.0f;
+
     if(key == 'E')
     {
         m_mouseLocked = m_mouseLocked ? false : true;
@@ -831,9 +837,12 @@ void CorvusEditor::OnMouseMove(const InputListener::Vec2& mousePosition)
 
     m_camera.Pitch(dy);
     m_camera.RotateY(dx);
-    
-    m_lastMousePos[0] = mousePosition.X;
-    m_lastMousePos[1] = mousePosition.Y;
+
+    uint32_t width, height;
+    m_window->GetSize(width, height);
+    InputSystem::Get()->SetCursorPosition(Vec2(width / 2.0f, height / 2.0f));
+    m_lastMousePos[0] = width / 2.0f;
+    m_lastMousePos[1] = height / 2.0f;
 }
 
 void CorvusEditor::OnLeftMouseDown(const InputListener::Vec2& mousePos)
@@ -855,5 +864,5 @@ void CorvusEditor::OnRightMouseUp(const InputListener::Vec2& mousePos)
 void CorvusEditor::UpdateProjMatrix(float width, float height)
 {
     float aspectRatio = width / height;
-    m_camera.UpdatePerspectiveFOV(m_fov * 3.14159f, aspectRatio);
+    m_camera.UpdatePerspectiveFOV(DirectX::XMConvertToRadians(m_fov), aspectRatio);
 }

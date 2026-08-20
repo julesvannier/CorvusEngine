@@ -32,26 +32,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -163,6 +163,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Core\Camera.cpp" />
+    <ClCompile Include="Core\ECS\Component.cpp" />
+    <ClCompile Include="Core\ECS\GameObject.cpp" />
+    <ClCompile Include="Core\ECS\MeshComponent.cpp" />
+    <ClCompile Include="Core\ECS\PointLightComponent.cpp" />
+    <ClCompile Include="Core\ECS\Scene.cpp" />
+    <ClCompile Include="Core\ECS\TransformComponent.cpp" />
+    <ClCompile Include="Core\Image.cpp" />
     <ClCompile Include="Core\InputSystem.cpp" />
     <ClCompile Include="Core\Logger.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
@@ -238,6 +245,8 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="Core\ResourcesManager.cpp" />
+    <ClCompile Include="Core\Utilities.cpp" />
     <ClCompile Include="Core\Window.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -314,64 +323,217 @@
     </ClCompile>
     <ClCompile Include="CorvusEditor.cpp" />
     <ClCompile Include="External\D3D12MA\D3D12MemAlloc.cpp" />
+    <ClCompile Include="External\DDSTextureLoader\DDSTextureLoader.cpp" />
     <ClCompile Include="External\ImGui\imgui.cpp" />
+    <ClCompile Include="External\ImGui\ImGuizmo.cpp" />
     <ClCompile Include="External\ImGui\imgui_demo.cpp" />
     <ClCompile Include="External\ImGui\imgui_draw.cpp" />
     <ClCompile Include="External\ImGui\imgui_impl_dx12.cpp" />
     <ClCompile Include="External\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="External\ImGui\imgui_tables.cpp" />
     <ClCompile Include="External\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="External\stb\stb.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="RenderItem.cpp" />
+    <ClCompile Include="Rendering\LightingRenderPass.cpp" />
+    <ClCompile Include="Rendering\GBufferRenderPass.cpp" />
+    <ClCompile Include="Rendering\RenderItem.cpp" />
+    <ClCompile Include="Rendering\RenderPass.cpp" />
+    <ClCompile Include="Rendering\ShaderCompiler.cpp" />
+    <ClCompile Include="Rendering\ShadowRenderPass.cpp" />
+    <ClCompile Include="Rendering\SkyBoxRenderPass.cpp" />
+    <ClCompile Include="Rendering\SSAORenderPass.cpp" />
+    <ClCompile Include="Rendering\TransparencyRenderPass.cpp" />
+    <ClCompile Include="Rendering\WaterRenderPass.cpp" />
     <ClCompile Include="RHI\Allocator.cpp" />
     <ClCompile Include="RHI\Buffer.cpp" />
     <ClCompile Include="RHI\CommandList.cpp" />
     <ClCompile Include="RHI\CommandQueue.cpp" />
+    <ClCompile Include="RHI\ComputePipeline.cpp" />
     <ClCompile Include="RHI\D3D12Renderer.cpp" />
     <ClCompile Include="RHI\DescriptorHeap.cpp" />
     <ClCompile Include="RHI\Device.cpp" />
     <ClCompile Include="RHI\GraphicsPipeline.cpp" />
+    <ClCompile Include="RHI\Sampler.cpp" />
     <ClCompile Include="RHI\SwapChain.cpp" />
     <ClCompile Include="RHI\Texture.cpp" />
+    <ClCompile Include="RHI\TextureCube.cpp" />
     <ClCompile Include="RHI\Uploader.cpp" />
-    <ClCompile Include="ShaderCompiler.cpp" />
     <AdditionalFiles Include="Shaders\SimplePixel.hlsl" />
     <AdditionalFiles Include="Shaders\SimpleVertex.hlsl" />
+    <AdditionalFiles Include="Shaders\DeferredGBufferPixel.hlsl" />
+    <AdditionalFiles Include="Shaders\DeferredLightingPixel.hlsl" />
+    <AdditionalFiles Include="Shaders\DeferredPointLightPixel.hlsl" />
+    <AdditionalFiles Include="Shaders\DeferredPointLightVertex.hlsl" />
+    <AdditionalFiles Include="Shaders\PBR.hlsl" />
+    <AdditionalFiles Include="Shaders\ScreenQuadVertex.hlsl" />
+    <AdditionalFiles Include="Shaders\SkyBoxPixel.hlsl" />
+    <AdditionalFiles Include="Shaders\SkyBoxVertex.hlsl" />
+    <AdditionalFiles Include="Shaders\IrradianceComputeShader.hlsl" />
+    <AdditionalFiles Include="Shaders\PrefilterEnvMapComputeShader.hlsl" />
+    <AdditionalFiles Include="Shaders\BRDFComputeShader.hlsl" />
+    <AdditionalFiles Include="Shaders\ShadowMapVertex.hlsl" />
+    <AdditionalFiles Include="Shaders\ShadowMapPixel.hlsl" />
+    <AdditionalFiles Include="Shaders\SSAO.hlsl" />
+    <AdditionalFiles Include="Shaders\TransparentPixel.hlsl" />
+    <AdditionalFiles Include="Shaders\WaterDomainShader.hlsl" />
+    <AdditionalFiles Include="Shaders\WaterHullShader.hlsl" />
+    <AdditionalFiles Include="Shaders\WaterVertex.hlsl" />
+    <AdditionalFiles Include="Shaders\WaterPixel.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Camera.h" />
     <ClInclude Include="Core\Core.h" />
+    <ClInclude Include="Core\ECS\Component.h" />
+    <ClInclude Include="Core\ECS\GameObject.h" />
+    <ClInclude Include="Core\ECS\MeshComponent.h" />
+    <ClInclude Include="Core\ECS\PointLightComponent.h" />
+    <ClInclude Include="Core\ECS\Scene.h" />
+    <ClInclude Include="Core\ECS\TransformComponent.h" />
+    <ClInclude Include="Core\Image.h" />
     <ClInclude Include="Core\InputListener.h" />
     <ClInclude Include="Core\InputSystem.h" />
     <ClInclude Include="Core\Logger.h" />
+    <ClInclude Include="Core\ResourcesManager.h" />
+    <ClInclude Include="Core\Utilities.h" />
     <ClInclude Include="Core\Window.h" />
     <ClInclude Include="CorvusEditor.h" />
+    <ClInclude Include="External\assimp\aabb.h" />
+    <ClInclude Include="External\assimp\ai_assert.h" />
+    <ClInclude Include="External\assimp\anim.h" />
+    <ClInclude Include="External\assimp\Base64.hpp" />
+    <ClInclude Include="External\assimp\BaseImporter.h" />
+    <ClInclude Include="External\assimp\Bitmap.h" />
+    <ClInclude Include="External\assimp\BlobIOSystem.h" />
+    <ClInclude Include="External\assimp\ByteSwapper.h" />
+    <ClInclude Include="External\assimp\camera.h" />
+    <ClInclude Include="External\assimp\cexport.h" />
+    <ClInclude Include="External\assimp\cfileio.h" />
+    <ClInclude Include="External\assimp\cimport.h" />
+    <ClInclude Include="External\assimp\ColladaMetaData.h" />
+    <ClInclude Include="External\assimp\color4.h" />
+    <ClInclude Include="External\assimp\color4.inl" />
+    <ClInclude Include="External\assimp\commonMetaData.h" />
+    <ClInclude Include="External\assimp\Compiler\poppack1.h" />
+    <ClInclude Include="External\assimp\Compiler\pstdint.h" />
+    <ClInclude Include="External\assimp\Compiler\pushpack1.h" />
+    <ClInclude Include="External\assimp\config.h" />
+    <ClInclude Include="External\assimp\CreateAnimMesh.h" />
+    <ClInclude Include="External\assimp\DefaultIOStream.h" />
+    <ClInclude Include="External\assimp\DefaultIOSystem.h" />
+    <ClInclude Include="External\assimp\DefaultLogger.hpp" />
+    <ClInclude Include="External\assimp\defs.h" />
+    <ClInclude Include="External\assimp\Exceptional.h" />
+    <ClInclude Include="External\assimp\Exporter.hpp" />
+    <ClInclude Include="External\assimp\fast_atof.h" />
+    <ClInclude Include="External\assimp\GenericProperty.h" />
+    <ClInclude Include="External\assimp\GltfMaterial.h" />
+    <ClInclude Include="External\assimp\Hash.h" />
+    <ClInclude Include="External\assimp\Importer.hpp" />
+    <ClInclude Include="External\assimp\importerdesc.h" />
+    <ClInclude Include="External\assimp\IOStream.hpp" />
+    <ClInclude Include="External\assimp\IOStreamBuffer.h" />
+    <ClInclude Include="External\assimp\IOSystem.hpp" />
+    <ClInclude Include="External\assimp\light.h" />
+    <ClInclude Include="External\assimp\LineSplitter.h" />
+    <ClInclude Include="External\assimp\LogAux.h" />
+    <ClInclude Include="External\assimp\Logger.hpp" />
+    <ClInclude Include="External\assimp\LogStream.hpp" />
+    <ClInclude Include="External\assimp\material.h" />
+    <ClInclude Include="External\assimp\material.inl" />
+    <ClInclude Include="External\assimp\MathFunctions.h" />
+    <ClInclude Include="External\assimp\matrix3x3.h" />
+    <ClInclude Include="External\assimp\matrix3x3.inl" />
+    <ClInclude Include="External\assimp\matrix4x4.h" />
+    <ClInclude Include="External\assimp\matrix4x4.inl" />
+    <ClInclude Include="External\assimp\MemoryIOWrapper.h" />
+    <ClInclude Include="External\assimp\mesh.h" />
+    <ClInclude Include="External\assimp\metadata.h" />
+    <ClInclude Include="External\assimp\NullLogger.hpp" />
+    <ClInclude Include="External\assimp\ObjMaterial.h" />
+    <ClInclude Include="External\assimp\ParsingUtils.h" />
+    <ClInclude Include="External\assimp\pbrmaterial.h" />
+    <ClInclude Include="External\assimp\port\AndroidJNI\AndroidJNIIOSystem.h" />
+    <ClInclude Include="External\assimp\port\AndroidJNI\BundledAssetIOSystem.h" />
+    <ClInclude Include="External\assimp\postprocess.h" />
+    <ClInclude Include="External\assimp\Profiler.h" />
+    <ClInclude Include="External\assimp\ProgressHandler.hpp" />
+    <ClInclude Include="External\assimp\qnan.h" />
+    <ClInclude Include="External\assimp\quaternion.h" />
+    <ClInclude Include="External\assimp\quaternion.inl" />
+    <ClInclude Include="External\assimp\RemoveComments.h" />
+    <ClInclude Include="External\assimp\scene.h" />
+    <ClInclude Include="External\assimp\SceneCombiner.h" />
+    <ClInclude Include="External\assimp\SGSpatialSort.h" />
+    <ClInclude Include="External\assimp\SkeletonMeshBuilder.h" />
+    <ClInclude Include="External\assimp\SmallVector.h" />
+    <ClInclude Include="External\assimp\SmoothingGroups.h" />
+    <ClInclude Include="External\assimp\SmoothingGroups.inl" />
+    <ClInclude Include="External\assimp\SpatialSort.h" />
+    <ClInclude Include="External\assimp\StandardShapes.h" />
+    <ClInclude Include="External\assimp\StreamReader.h" />
+    <ClInclude Include="External\assimp\StreamWriter.h" />
+    <ClInclude Include="External\assimp\StringComparison.h" />
+    <ClInclude Include="External\assimp\StringUtils.h" />
+    <ClInclude Include="External\assimp\Subdivision.h" />
+    <ClInclude Include="External\assimp\texture.h" />
+    <ClInclude Include="External\assimp\TinyFormatter.h" />
+    <ClInclude Include="External\assimp\types.h" />
+    <ClInclude Include="External\assimp\vector2.h" />
+    <ClInclude Include="External\assimp\vector2.inl" />
+    <ClInclude Include="External\assimp\vector3.h" />
+    <ClInclude Include="External\assimp\vector3.inl" />
+    <ClInclude Include="External\assimp\version.h" />
+    <ClInclude Include="External\assimp\Vertex.h" />
+    <ClInclude Include="External\assimp\XmlParser.h" />
+    <ClInclude Include="External\assimp\XMLTools.h" />
+    <ClInclude Include="External\assimp\ZipArchiveIOSystem.h" />
     <ClInclude Include="External\D3D12MA\D3D12MemAlloc.h" />
+    <ClInclude Include="External\DDSTextureLoader\d3dx12.h" />
+    <ClInclude Include="External\DDSTextureLoader\DDSTextureLoader.h" />
     <ClInclude Include="External\ImGui\imconfig.h" />
     <ClInclude Include="External\ImGui\imgui.h" />
+    <ClInclude Include="External\ImGui\ImGuizmo.h" />
     <ClInclude Include="External\ImGui\imgui_impl_dx12.h" />
     <ClInclude Include="External\ImGui\imgui_impl_win32.h" />
     <ClInclude Include="External\ImGui\imgui_internal.h" />
     <ClInclude Include="External\ImGui\imstb_rectpack.h" />
     <ClInclude Include="External\ImGui\imstb_textedit.h" />
     <ClInclude Include="External\ImGui\imstb_truetype.h" />
-    <ClInclude Include="RenderItem.h" />
+    <ClInclude Include="External\stb\stb_image.h" />
+    <ClInclude Include="External\stb\stb_image_write.h" />
+    <ClInclude Include="Rendering\LightingRenderPass.h" />
+    <ClInclude Include="Rendering\GBufferRenderPass.h" />
+    <ClInclude Include="Rendering\RenderingLayouts.h" />
+    <ClInclude Include="Rendering\RenderItem.h" />
+    <ClInclude Include="Rendering\RenderPass.h" />
+    <ClInclude Include="Rendering\ShaderCompiler.h" />
+    <ClInclude Include="Rendering\ShadowRenderPass.h" />
+    <ClInclude Include="Rendering\SkyBoxRenderPass.h" />
+    <ClInclude Include="Rendering\SSAORenderPass.h" />
+    <ClInclude Include="Rendering\TransparencyRenderPass.h" />
+    <ClInclude Include="Rendering\WaterRenderPass.h" />
     <ClInclude Include="RHI\Allocator.h" />
     <ClInclude Include="RHI\Buffer.h" />
     <ClInclude Include="RHI\CommandList.h" />
     <ClInclude Include="RHI\CommandQueue.h" />
+    <ClInclude Include="RHI\ComputePipeline.h" />
     <ClInclude Include="RHI\D3D12Renderer.h" />
     <ClInclude Include="RHI\DescriptorHeap.h" />
     <ClInclude Include="RHI\Device.h" />
     <ClInclude Include="RHI\GraphicsPipeline.h" />
+    <ClInclude Include="RHI\Sampler.h" />
     <ClInclude Include="RHI\SwapChain.h" />
     <ClInclude Include="RHI\Texture.h" />
+    <ClInclude Include="RHI\TextureCube.h" />
     <ClInclude Include="RHI\Uploader.h" />
-    <ClInclude Include="ShaderCompiler.h" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="External\assimp\.editorconfig" />
+    <Content Include="External\assimp\config.h.in" />
+    <Content Include="External\assimp\lib\assimp-vc143-mt.lib" />
     <Content Include="External\D3D12MA\LICENSE" />
     <Content Include="External\ImGui\LICENSE" />
+    <Content Include="External\stb\LICENSE" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
