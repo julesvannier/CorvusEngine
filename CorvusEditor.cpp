@@ -13,11 +13,10 @@
 #include "Rendering/LightingRenderPass.h"
 #include "Rendering/ShaderCompiler.h"
 #include "RHI/Buffer.h"
-#include "RHI/Uploader.h"
 #include "Rendering/RenderingLayouts.h"
 #include "Rendering/SkyBoxRenderPass.h"
 #include "Rendering/TransparencyRenderPass.h"
-#include "RHI/D3D12Renderer.h"
+#include "RHI/D3D12Driver.h"
 
 CorvusEditor::CorvusEditor()
 {
@@ -45,7 +44,7 @@ CorvusEditor::CorvusEditor()
         m_renderer->Resize(width, height);
     });
 
-    m_renderer = std::make_shared<D3D12Renderer>(m_window->GetHandle());
+    m_renderer = std::make_shared<D3D12Driver>(m_window->GetHandle());
 
     m_resourceManager = std::make_shared<ResourcesManager>(m_renderer);
 
@@ -346,36 +345,35 @@ std::shared_ptr<GameObject> CorvusEditor::AddModelToScene(std::string name, cons
 {
     auto model = m_resourceManager->LoadMesh(modelPath);
 
-    Uploader uploader = m_renderer->CreateUploader();
     Image albedoImg;
     Image normalImg;
     Image mrImg;
 
     if(!albedoPath.empty())
     {
-        auto albedoTexture = m_resourceManager->LoadTexture(albedoPath, uploader, albedoImg);
+        auto albedoTexture = m_resourceManager->LoadTexture(albedoPath, albedoImg);
         model->GetMaterial().HasAlbedo = true;
         model->GetMaterial().Albedo = albedoTexture;
     }
 
     if(!normalPath.empty())
     {
-        auto normalTexture = m_resourceManager->LoadTexture(normalPath, uploader, normalImg);
+        auto normalTexture = m_resourceManager->LoadTexture(normalPath, normalImg);
         model->GetMaterial().HasNormal = true;
         model->GetMaterial().Normal = normalTexture;
     }
 
     if(!mrPath.empty())
     {
-        auto mrTexture = m_resourceManager->LoadTexture(mrPath, uploader, mrImg);
+        auto mrTexture = m_resourceManager->LoadTexture(mrPath, mrImg);
         model->GetMaterial().HasMetallicRoughness = true;
         model->GetMaterial().MetallicRoughness = mrTexture;
     }
 
     model->GetMaterial().IsTransparent = transparent;
 
-    if(uploader.HasCommands())
-        m_renderer->FlushUploader(uploader);
+    if(m_renderer->HasPendingUploads())
+        m_renderer->FlushUploads();
 
     auto idRmd = m_meshesInstancesCount.find(modelPath);
     if(idRmd != m_meshesInstancesCount.end())

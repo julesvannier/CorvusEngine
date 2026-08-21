@@ -1,6 +1,6 @@
 ﻿#include "GBufferRenderPass.h"
 
-void GBufferRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
+void GBufferRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
 {
     m_textureSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
 
@@ -27,7 +27,7 @@ void GBufferRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int 
     OnResize(renderer, width, height);
 }
 
-void GBufferRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
+void GBufferRenderPass::OnResize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
 {
     m_GBuffer.AlbedoRenderTarget.reset();
     m_GBuffer.NormalRenderTarget.reset();
@@ -53,7 +53,7 @@ void GBufferRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int wi
     renderer->CreateShaderResourceView(m_GBuffer.MetallicRoughnessRenderTarget);
 }
 
-void GBufferRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
+void GBufferRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
 {
     auto view = camera.GetViewMatrix();
     auto proj = camera.GetProjMatrix();

@@ -1,6 +1,6 @@
 ﻿#include "LightingRenderPass.h"
 
-void LightingRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
+void LightingRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
 {
     m_textureSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
     m_comparisonSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
@@ -40,11 +40,11 @@ void LightingRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int
     m_instancedLightsInstanceDataInfoBuffer = renderer->CreateBuffer(sizeof(PointLight) * MAX_LIGHTS, sizeof(PointLight), BufferType::Structured, false);
 }
 
-void LightingRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
+void LightingRenderPass::OnResize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
 {
 }
 
-void LightingRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
+void LightingRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
 {
     auto view = camera.GetViewMatrix();
     auto proj = camera.GetProjMatrix();

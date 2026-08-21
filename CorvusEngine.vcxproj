@@ -349,7 +349,7 @@
     <ClCompile Include="RHI\CommandList.cpp" />
     <ClCompile Include="RHI\CommandQueue.cpp" />
     <ClCompile Include="RHI\ComputePipeline.cpp" />
-    <ClCompile Include="RHI\D3D12Renderer.cpp" />
+    <ClCompile Include="RHI\D3D12Driver.cpp" />
     <ClCompile Include="RHI\DescriptorHeap.cpp" />
     <ClCompile Include="RHI\Device.cpp" />
     <ClCompile Include="RHI\GraphicsPipeline.cpp" />
@@ -357,7 +357,6 @@
     <ClCompile Include="RHI\SwapChain.cpp" />
     <ClCompile Include="RHI\Texture.cpp" />
     <ClCompile Include="RHI\TextureCube.cpp" />
-    <ClCompile Include="RHI\Uploader.cpp" />
     <AdditionalFiles Include="Shaders\SimplePixel.hlsl" />
     <AdditionalFiles Include="Shaders\SimpleVertex.hlsl" />
     <AdditionalFiles Include="Shaders\DeferredGBufferPixel.hlsl" />
@@ -517,7 +516,7 @@
     <ClInclude Include="RHI\CommandList.h" />
     <ClInclude Include="RHI\CommandQueue.h" />
     <ClInclude Include="RHI\ComputePipeline.h" />
-    <ClInclude Include="RHI\D3D12Renderer.h" />
+    <ClInclude Include="RHI\D3D12Driver.h" />
     <ClInclude Include="RHI\DescriptorHeap.h" />
     <ClInclude Include="RHI\Device.h" />
     <ClInclude Include="RHI\GraphicsPipeline.h" />
@@ -525,7 +524,6 @@
     <ClInclude Include="RHI\SwapChain.h" />
     <ClInclude Include="RHI\Texture.h" />
     <ClInclude Include="RHI\TextureCube.h" />
-    <ClInclude Include="RHI\Uploader.h" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="External\assimp\.editorconfig" />

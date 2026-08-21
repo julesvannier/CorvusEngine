@@ -1,8 +1,7 @@
 ﻿#include "ResourcesManager.h"
 #include "Image.h"
-#include "../RHI/Uploader.h"
 
-ResourcesManager::ResourcesManager(std::shared_ptr<D3D12Renderer> renderer) : m_renderer(renderer)
+ResourcesManager::ResourcesManager(std::shared_ptr<D3D12Driver> renderer) : m_renderer(renderer)
 {
 }
 
@@ -10,7 +9,7 @@ ResourcesManager::~ResourcesManager()
 {
 }
 
-std::shared_ptr<Texture> ResourcesManager::LoadTexture(const std::string& texPath, Uploader& uploader, Image& img)
+std::shared_ptr<Texture> ResourcesManager::LoadTexture(const std::string& texPath, Image& img)
 {
     if(texPath.empty())
         return nullptr;
@@ -27,7 +26,7 @@ std::shared_ptr<Texture> ResourcesManager::LoadTexture(const std::string& texPat
         img.LoadImageFromFile(texPath);
         auto texture = renderer->CreateTexture(img.Width, img.Height, TextureFormat::RGBA8, TextureType::ShaderResource);
         renderer->CreateShaderResourceView(texture);
-        uploader.CopyHostToDeviceTexture(img, texture);
+        renderer->UploadTextureData(img, texture);
 
         m_textures.emplace(texPath, texture);
 

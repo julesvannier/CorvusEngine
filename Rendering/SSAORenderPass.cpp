@@ -1,7 +1,7 @@
 ﻿#include "SSAORenderPass.h"
 #include "Utilities.h"
 
-void SSAORenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
+void SSAORenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
 {
     m_sampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_FILTER_MAXIMUM_MIN_MAG_MIP_LINEAR);
     
@@ -15,7 +15,7 @@ void SSAORenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int wid
     OnResize(renderer, width, height);
 }
 
-void SSAORenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
+void SSAORenderPass::OnResize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
 {
     m_SSAOTexture.reset();
 
@@ -27,7 +27,7 @@ void SSAORenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width
     renderer->CreateShaderResourceView(m_SSAOTexture);
 }
 
-void SSAORenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
+void SSAORenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
 {
     SSAOConstantBuffer constantBuffer;
     constantBuffer.Mode = globalPassData.ViewMode;

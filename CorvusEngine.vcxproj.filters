@@ -63,7 +63,7 @@
     <ClCompile Include="RHI\CommandQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RHI\D3D12Renderer.cpp">
+    <ClCompile Include="RHI\D3D12Driver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RHI\DescriptorHeap.cpp">
@@ -79,9 +79,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RHI\Texture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RHI\Uploader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Camera.cpp">
@@ -218,7 +215,7 @@
     <ClInclude Include="RHI\CommandQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RHI\D3D12Renderer.h">
+    <ClInclude Include="RHI\D3D12Driver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RHI\DescriptorHeap.h">
@@ -234,9 +231,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RHI\Texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RHI\Uploader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Camera.h">

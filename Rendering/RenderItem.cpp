@@ -8,7 +8,7 @@ RenderItem::~RenderItem()
 {
 }
 
-void RenderItem::ImportMesh(std::shared_ptr<D3D12Renderer> renderer, std::string filePath)
+void RenderItem::ImportMesh(std::shared_ptr<D3D12Driver> renderer, std::string filePath)
 {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(filePath, aiProcess_FlipWindingOrder | aiProcess_CalcTangentSpace);
@@ -22,7 +22,7 @@ void RenderItem::ImportMesh(std::shared_ptr<D3D12Renderer> renderer, std::string
     m_path = filePath;
 }
 
-void RenderItem::ProcessPrimitive(std::shared_ptr<D3D12Renderer> renderer, aiMesh* mesh, const aiScene* scene)
+void RenderItem::ProcessPrimitive(std::shared_ptr<D3D12Driver> renderer, aiMesh* mesh, const aiScene* scene)
 {
     Primitive out;
     DirectX::XMMATRIX identityMatrix = DirectX::XMMatrixIdentity();
@@ -61,15 +61,14 @@ void RenderItem::ProcessPrimitive(std::shared_ptr<D3D12Renderer> renderer, aiMes
     out.m_vertexBuffer = renderer->CreateBuffer(out.m_vertexCount * sizeof(Vertex), sizeof(Vertex), BufferType::Vertex, false);
     out.m_indicesBuffer = renderer->CreateBuffer(out.m_indexCount * sizeof(uint32_t), 0, BufferType::Index, false);
 
-    Uploader uploader = renderer->CreateUploader();
-    uploader.CopyHostToDeviceLocal(vertices.data(), vertices.size() * sizeof(Vertex), out.m_vertexBuffer);
-    uploader.CopyHostToDeviceLocal(indices.data(), indices.size() * sizeof(uint32_t), out.m_indicesBuffer);
-    renderer->FlushUploader(uploader);
+    renderer->UploadBufferData(vertices.data(), vertices.size() * sizeof(Vertex), out.m_vertexBuffer);
+    renderer->UploadBufferData(indices.data(), indices.size() * sizeof(uint32_t), out.m_indicesBuffer);
+    renderer->FlushUploads();
 
     m_primitives.push_back(out);
 }
 
-void RenderItem::ProcessNode(std::shared_ptr<D3D12Renderer> renderer, aiNode* node, const aiScene* scene)
+void RenderItem::ProcessNode(std::shared_ptr<D3D12Driver> renderer, aiNode* node, const aiScene* scene)
 {
     for (int i = 0; i < node->mNumMeshes; i++)
     {
@@ -81,7 +80,7 @@ void RenderItem::ProcessNode(std::shared_ptr<D3D12Renderer> renderer, aiNode* no
         ProcessNode(renderer, node->mChildren[i], scene);
 }
 
-void RenderItem::CreateQuadMesh(std::shared_ptr<D3D12Renderer> renderer)
+void RenderItem::CreateQuadMesh(std::shared_ptr<D3D12Driver> renderer)
 {
     Primitive out;
     DirectX::XMMATRIX identityMatrix = DirectX::XMMatrixIdentity();
@@ -101,10 +100,9 @@ void RenderItem::CreateQuadMesh(std::shared_ptr<D3D12Renderer> renderer)
     out.m_vertexBuffer = renderer->CreateBuffer(out.m_vertexCount * sizeof(LightVertex), sizeof(LightVertex), BufferType::Vertex, false);
     out.m_indicesBuffer = renderer->CreateBuffer(out.m_indexCount * sizeof(uint32_t), 0, BufferType::Index, false);
 
-    Uploader uploader = renderer->CreateUploader();
-    uploader.CopyHostToDeviceLocal(vertices.data(), vertices.size() * sizeof(LightVertex), out.m_vertexBuffer);
-    uploader.CopyHostToDeviceLocal(indices.data(), indices.size() * sizeof(uint32_t), out.m_indicesBuffer);
-    renderer->FlushUploader(uploader);
+    renderer->UploadBufferData(vertices.data(), vertices.size() * sizeof(LightVertex), out.m_vertexBuffer);
+    renderer->UploadBufferData(indices.data(), indices.size() * sizeof(uint32_t), out.m_indicesBuffer);
+    renderer->FlushUploads();
 
     m_primitives.push_back(out);
 }

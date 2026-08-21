@@ -9,7 +9,7 @@
 #include "ImGui/ImGuizmo.h"
 #include "Rendering/GBufferRenderPass.h"
 #include "Rendering/LightingRenderPass.h"
-#include "RHI/D3D12Renderer.h"
+#include "RHI/D3D12Driver.h"
 #include "Rendering/RenderPass.h"
 #include "Rendering/ShadowRenderPass.h"
 #include "Rendering/SkyBoxRenderPass.h"
@@ -45,7 +45,7 @@ private:
     void UpdateProjMatrix(float width, float height);
     
     std::shared_ptr<Window> m_window;
-    std::shared_ptr<D3D12Renderer> m_renderer;
+    std::shared_ptr<D3D12Driver> m_renderer;
     std::shared_ptr<GraphicsPipeline> m_trianglePipeline;
     std::shared_ptr<Buffer> m_constantBuffer;
     std::shared_ptr<Buffer> m_lightsConstantBuffer;

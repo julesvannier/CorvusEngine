@@ -28,6 +28,7 @@ public:
     void SetState(D3D12_RESOURCE_STATES state) { m_state = state; }
 
     GPUResource& GetResource() { return m_resource; }
+    bool IsUploadHeap() const { return m_type == BufferType::Constant || m_type == BufferType::Copy || m_type == BufferType::Structured; }
 
 private:
     friend class CommandList;

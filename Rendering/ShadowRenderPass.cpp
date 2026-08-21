@@ -1,6 +1,6 @@
 ﻿#include "ShadowRenderPass.h"
 
-void ShadowRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
+void ShadowRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
 {
     GraphicsPipelineSpecs shadowSpecs;
     shadowSpecs.FormatCount = 0;
@@ -21,7 +21,7 @@ void ShadowRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int w
     OnResize(renderer, width, height);
 }
 
-void ShadowRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
+void ShadowRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
 {
     float sceneBoundsRadius = 15.0f;
     
@@ -122,7 +122,7 @@ void ShadowRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const Globa
     commandList->ImageBarrier(m_shadowMap.DepthBuffer, D3D12_RESOURCE_STATE_GENERIC_READ);
 }
 
-void ShadowRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
+void ShadowRenderPass::OnResize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
 {
     m_shadowMapWidth = width;
     m_shadowMapHeight = height;

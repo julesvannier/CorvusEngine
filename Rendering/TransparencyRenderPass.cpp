@@ -1,6 +1,6 @@
 ﻿#include "TransparencyRenderPass.h"
 
-void TransparencyRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
+void TransparencyRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
 {
     m_textureSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
 
@@ -24,11 +24,11 @@ void TransparencyRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer,
     m_opacityValuesBuffer = renderer->CreateBuffer(sizeof(float) * MAX_TRANSPARENT_OBJECTS, sizeof(float), BufferType::Structured, false);
 }
 
-void TransparencyRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
+void TransparencyRenderPass::OnResize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
 {
 }
 
-void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTargetInfo)
+void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTargetInfo)
 {
     // Prepass to list all Opacity values
     bool foundTransparentMesh = false;

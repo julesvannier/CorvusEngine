@@ -1,7 +1,7 @@
 ﻿#include "WaterRenderPass.h"
 #include "Image.h"
 
-void WaterRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
+void WaterRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
 {
     m_textureSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
     
@@ -29,34 +29,32 @@ void WaterRenderPass::Initialize(std::shared_ptr<D3D12Renderer> renderer, int wi
     m_waterConstantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
     renderer->CreateConstantBuffer(m_waterConstantBuffer);
 
-    Uploader uploader = renderer->CreateUploader();
-
     Image noiseImg;
     noiseImg.LoadImageFromFile("Assets/waterNoise.png");
     m_noiseTex = renderer->CreateTexture(noiseImg.Width, noiseImg.Height, TextureFormat::R8Norm, TextureType::ShaderResource);
     renderer->CreateShaderResourceView(m_noiseTex);
-    uploader.CopyHostToDeviceTexture(noiseImg, m_noiseTex);
-    
+    renderer->UploadTextureData(noiseImg, m_noiseTex);
+
     Image normalImg;
     normalImg.LoadImageFromFile("Assets/waterNM1.png");
     m_normalMap = renderer->CreateTexture(normalImg.Width, normalImg.Height, TextureFormat::RGBA8, TextureType::ShaderResource);
     renderer->CreateShaderResourceView(m_normalMap);
-    uploader.CopyHostToDeviceTexture(normalImg, m_normalMap);
+    renderer->UploadTextureData(normalImg, m_normalMap);
 
     Image normalImg2;
     normalImg2.LoadImageFromFile("Assets/waterNM2.png");
     m_normalMap2 = renderer->CreateTexture(normalImg2.Width, normalImg2.Height, TextureFormat::RGBA8, TextureType::ShaderResource);
     renderer->CreateShaderResourceView(m_normalMap2);
-    uploader.CopyHostToDeviceTexture(normalImg2, m_normalMap2);
-    
-    renderer->FlushUploader(uploader);
+    renderer->UploadTextureData(normalImg2, m_normalMap2);
+
+    renderer->FlushUploads();
 }
 
-void WaterRenderPass::OnResize(std::shared_ptr<D3D12Renderer> renderer, int width, int height)
+void WaterRenderPass::OnResize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
 {
 }
 
-void WaterRenderPass::Pass(std::shared_ptr<D3D12Renderer> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTargetInfo)
+void WaterRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTargetInfo)
 {
     bool foundWaterMesh = false;
     for (const auto renderMeshData : renderMeshesData)
