@@ -1,8 +1,8 @@
 ﻿#include "TransparencyRenderPass.h"
 
-void TransparencyRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
+void TransparencyRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width, int height)
 {
-    m_textureSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
+    m_textureSampler = device->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
 
     GraphicsPipelineSpecs specs;
     specs.FormatCount = 1;
@@ -16,19 +16,19 @@ void TransparencyRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, i
     ShaderCompiler::CompileShader("Shaders/SimpleVertex.hlsl", ShaderType::Vertex, specs.ShadersBytecodes[ShaderType::Vertex]);
     ShaderCompiler::CompileShader("Shaders/TransparentPixel.hlsl", ShaderType::Pixel, specs.ShadersBytecodes[ShaderType::Pixel]);
 
-    m_forwardTransparencyPipeline = renderer->CreateGraphicsPipeline(specs);
+    m_forwardTransparencyPipeline = device->CreateGraphicsPipeline(specs);
 
-    m_sceneConstantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
-    renderer->CreateConstantBuffer(m_sceneConstantBuffer);
+    m_sceneConstantBuffer = device->CreateBuffer(256, 0, BufferType::Constant, false);
+    device->CreateConstantBuffer(m_sceneConstantBuffer);
 
-    m_opacityValuesBuffer = renderer->CreateBuffer(sizeof(float) * MAX_TRANSPARENT_OBJECTS, sizeof(float), BufferType::Structured, false);
+    m_opacityValuesBuffer = device->CreateBuffer(sizeof(float) * MAX_TRANSPARENT_OBJECTS, sizeof(float), BufferType::Structured, false);
 }
 
-void TransparencyRenderPass::OnResize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
+void TransparencyRenderPass::OnResize(std::shared_ptr<D3D12Driver> device, int width, int height)
 {
 }
 
-void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTargetInfo)
+void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTargetInfo)
 {
     // Prepass to list all Opacity values
     bool foundTransparentMesh = false;
@@ -74,7 +74,7 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const G
         m_sceneConstantBuffer->Unmap(0, 0);
     }
 
-    auto commandList = renderer->GetCurrentCommandList();
+    auto commandList = device->GetCurrentCommandList();
     
     commandList->SetTopology(Topology::TriangleList);
     commandList->BindGraphicsPipeline(m_forwardTransparencyPipeline);

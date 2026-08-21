@@ -11,6 +11,7 @@ D3D12_RESOURCE_FLAGS GetResourceFlag(TextureType usage)
         case TextureType::Copy:
             return D3D12_RESOURCE_FLAG_NONE;
         case TextureType::ShaderResource:
+            return D3D12_RESOURCE_FLAG_NONE;
         case TextureType::Storage:
             return D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
     }

@@ -66,7 +66,7 @@ class RenderPass
 {
 public:
     virtual ~RenderPass() = default;
-    virtual void Initialize(std::shared_ptr<D3D12Driver> renderer, int width, int height) = 0;
-    virtual void Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget) = 0;
-    virtual void OnResize(std::shared_ptr<D3D12Driver> renderer, int width, int height) = 0;
+    virtual void Initialize(std::shared_ptr<D3D12Driver> device, int width, int height) = 0;
+    virtual void Pass(std::shared_ptr<D3D12Driver> device, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget) = 0;
+    virtual void OnResize(std::shared_ptr<D3D12Driver> device, int width, int height) = 0;
 };

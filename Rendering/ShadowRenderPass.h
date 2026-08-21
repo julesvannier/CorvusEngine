@@ -4,9 +4,9 @@
 class ShadowRenderPass : public RenderPass
 {
 public:
-    void Initialize(std::shared_ptr<D3D12Driver> renderer, int width, int height) override;
-    void Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget) override;
-    void OnResize(std::shared_ptr<D3D12Driver> renderer, int width, int height) override;
+    void Initialize(std::shared_ptr<D3D12Driver> device, int width, int height) override;
+    void Pass(std::shared_ptr<D3D12Driver> device, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget) override;
+    void OnResize(std::shared_ptr<D3D12Driver> device, int width, int height) override;
 
     ShadowMap GetShadowMap() { return m_shadowMap; }
 

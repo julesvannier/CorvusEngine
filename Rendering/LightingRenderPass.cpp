@@ -1,9 +1,9 @@
 ﻿#include "LightingRenderPass.h"
 
-void LightingRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
+void LightingRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width, int height)
 {
-    m_textureSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
-    m_comparisonSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
+    m_textureSampler = device->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
+    m_comparisonSampler = device->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
 
     GraphicsPipelineSpecs dirLightSpecs;
     dirLightSpecs.FormatCount = 1;
@@ -15,7 +15,7 @@ void LightingRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int w
     ShaderCompiler::CompileShader("Shaders/ScreenQuadVertex.hlsl", ShaderType::Vertex, dirLightSpecs.ShadersBytecodes[ShaderType::Vertex]);
     ShaderCompiler::CompileShader("Shaders/DeferredLightingPixel.hlsl", ShaderType::Pixel, dirLightSpecs.ShadersBytecodes[ShaderType::Pixel]);
 
-    m_deferredDirLightPipeline = renderer->CreateGraphicsPipeline(dirLightSpecs);
+    m_deferredDirLightPipeline = device->CreateGraphicsPipeline(dirLightSpecs);
 
     GraphicsPipelineSpecs pointLightSpecs;
     pointLightSpecs.FormatCount = 1;
@@ -27,24 +27,24 @@ void LightingRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int w
     ShaderCompiler::CompileShader("Shaders/DeferredPointLightVertex.hlsl", ShaderType::Vertex, pointLightSpecs.ShadersBytecodes[ShaderType::Vertex]);
     ShaderCompiler::CompileShader("Shaders/DeferredPointLightPixel.hlsl", ShaderType::Pixel, pointLightSpecs.ShadersBytecodes[ShaderType::Pixel]);
 
-    m_deferredPointLightPipeline = renderer->CreateGraphicsPipeline(pointLightSpecs);
+    m_deferredPointLightPipeline = device->CreateGraphicsPipeline(pointLightSpecs);
 
-    m_sceneConstantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
-    renderer->CreateConstantBuffer(m_sceneConstantBuffer);
+    m_sceneConstantBuffer = device->CreateBuffer(256, 0, BufferType::Constant, false);
+    device->CreateConstantBuffer(m_sceneConstantBuffer);
 
-    OnResize(renderer, width, height);
+    OnResize(device, width, height);
 
     m_pointLightMesh = std::make_shared<RenderItem>();
-    m_pointLightMesh->ImportMesh(renderer, "Assets/sphere.gltf");
-    m_instancedLightsInstanceDataTransformBuffer = renderer->CreateBuffer(sizeof(InstanceData) * MAX_LIGHTS, sizeof(InstanceData), BufferType::Structured, false);
-    m_instancedLightsInstanceDataInfoBuffer = renderer->CreateBuffer(sizeof(PointLight) * MAX_LIGHTS, sizeof(PointLight), BufferType::Structured, false);
+    m_pointLightMesh->ImportMesh(device, "Assets/sphere.gltf");
+    m_instancedLightsInstanceDataTransformBuffer = device->CreateBuffer(sizeof(InstanceData) * MAX_LIGHTS, sizeof(InstanceData), BufferType::Structured, false);
+    m_instancedLightsInstanceDataInfoBuffer = device->CreateBuffer(sizeof(PointLight) * MAX_LIGHTS, sizeof(PointLight), BufferType::Structured, false);
 }
 
-void LightingRenderPass::OnResize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
+void LightingRenderPass::OnResize(std::shared_ptr<D3D12Driver> device, int width, int height)
 {
 }
 
-void LightingRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
+void LightingRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
 {
     auto view = camera.GetViewMatrix();
     auto proj = camera.GetProjMatrix();
@@ -75,7 +75,7 @@ void LightingRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const Globa
         m_sceneConstantBuffer->Unmap(0, 0);
     }
     
-    auto commandList = renderer->GetCurrentCommandList();
+    auto commandList = device->GetCurrentCommandList();
     commandList->SetViewport(0, 0, globalPassData.ViewportSizeX, globalPassData.ViewportSizeY);
 
     // ------------------------------------------------------------- Lighting Pass (directional) --------------------------------------------------------------------

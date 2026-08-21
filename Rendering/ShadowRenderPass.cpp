@@ -1,6 +1,6 @@
 ﻿#include "ShadowRenderPass.h"
 
-void ShadowRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
+void ShadowRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width, int height)
 {
     GraphicsPipelineSpecs shadowSpecs;
     shadowSpecs.FormatCount = 0;
@@ -13,15 +13,15 @@ void ShadowRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int wid
     ShaderCompiler::CompileShader("Shaders/ShadowMapVertex.hlsl", ShaderType::Vertex, shadowSpecs.ShadersBytecodes[ShaderType::Vertex]);
     ShaderCompiler::CompileShader("Shaders/ShadowMapPixel.hlsl", ShaderType::Pixel, shadowSpecs.ShadersBytecodes[ShaderType::Pixel]);
 
-    m_shadowPipeline = renderer->CreateGraphicsPipeline(shadowSpecs);
+    m_shadowPipeline = device->CreateGraphicsPipeline(shadowSpecs);
 
-    m_constantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
-    renderer->CreateConstantBuffer(m_constantBuffer);
+    m_constantBuffer = device->CreateBuffer(256, 0, BufferType::Constant, false);
+    device->CreateConstantBuffer(m_constantBuffer);
 
-    OnResize(renderer, width, height);
+    OnResize(device, width, height);
 }
 
-void ShadowRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
+void ShadowRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
 {
     float sceneBoundsRadius = 15.0f;
     
@@ -69,7 +69,7 @@ void ShadowRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalP
         m_constantBuffer->Unmap(0, 0);
     }
     
-    auto commandList = renderer->GetCurrentCommandList();
+    auto commandList = device->GetCurrentCommandList();
 
     commandList->ImageBarrier(m_shadowMap.DepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
     commandList->ClearDepthTarget(m_shadowMap.DepthBuffer);
@@ -122,16 +122,16 @@ void ShadowRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalP
     commandList->ImageBarrier(m_shadowMap.DepthBuffer, D3D12_RESOURCE_STATE_GENERIC_READ);
 }
 
-void ShadowRenderPass::OnResize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
+void ShadowRenderPass::OnResize(std::shared_ptr<D3D12Driver> device, int width, int height)
 {
     m_shadowMapWidth = width;
     m_shadowMapHeight = height;
     
     m_shadowMap.DepthBuffer.reset();
 
-    m_shadowMap.DepthBuffer = renderer->CreateTexture(width, height, TextureFormat::R32Depth, TextureType::DepthTarget);
-    renderer->CreateDepthView(m_shadowMap.DepthBuffer);
+    m_shadowMap.DepthBuffer = device->CreateTexture(width, height, TextureFormat::R32Depth, TextureType::DepthTarget);
+    device->CreateDepthView(m_shadowMap.DepthBuffer);
     m_shadowMap.DepthBuffer->SetFormat(TextureFormat::R32Float);
-    renderer->CreateShaderResourceView(m_shadowMap.DepthBuffer);
+    device->CreateShaderResourceView(m_shadowMap.DepthBuffer);
     m_shadowMap.DepthBuffer->SetFormat(TextureFormat::R32Depth);
 }

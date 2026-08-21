@@ -1,7 +1,7 @@
 ﻿#include "ResourcesManager.h"
 #include "Image.h"
 
-ResourcesManager::ResourcesManager(std::shared_ptr<D3D12Driver> renderer) : m_renderer(renderer)
+ResourcesManager::ResourcesManager(std::shared_ptr<D3D12Driver> device) : m_device(device)
 {
 }
 
@@ -14,7 +14,7 @@ std::shared_ptr<Texture> ResourcesManager::LoadTexture(const std::string& texPat
     if(texPath.empty())
         return nullptr;
     
-    if(auto renderer = m_renderer.lock())
+    if(auto device = m_device.lock())
     {
         auto weakTex = m_textures.find(texPath);
         if(weakTex != m_textures.end())
@@ -24,9 +24,9 @@ std::shared_ptr<Texture> ResourcesManager::LoadTexture(const std::string& texPat
         }
 
         img.LoadImageFromFile(texPath);
-        auto texture = renderer->CreateTexture(img.Width, img.Height, TextureFormat::RGBA8, TextureType::ShaderResource);
-        renderer->CreateShaderResourceView(texture);
-        renderer->UploadTextureData(img, texture);
+        auto texture = device->CreateTexture(img.Width, img.Height, TextureFormat::RGBA8, TextureType::ShaderResource);
+        device->CreateShaderResourceView(texture);
+        device->UploadTextureData(img, texture);
 
         m_textures.emplace(texPath, texture);
 
@@ -41,7 +41,7 @@ std::shared_ptr<RenderItem> ResourcesManager::LoadMesh(const std::string& meshPa
     if(meshPath.empty())
         return nullptr;
 
-    if(auto renderer = m_renderer.lock())
+    if(auto device = m_device.lock())
     {
         auto weakMesh = m_renderItems.find(meshPath);
         if(weakMesh != m_renderItems.end())
@@ -51,7 +51,7 @@ std::shared_ptr<RenderItem> ResourcesManager::LoadMesh(const std::string& meshPa
         }
 
         auto model = std::make_shared<RenderItem>();
-        model->ImportMesh(renderer, meshPath);
+        model->ImportMesh(device, meshPath);
 
         m_renderItems.emplace(meshPath, model);
         

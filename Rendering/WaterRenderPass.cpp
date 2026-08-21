@@ -1,9 +1,9 @@
 ﻿#include "WaterRenderPass.h"
 #include "Image.h"
 
-void WaterRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
+void WaterRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width, int height)
 {
-    m_textureSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
+    m_textureSampler = device->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
     
     GraphicsPipelineSpecs specs;
     specs.FormatCount = 1;
@@ -21,40 +21,40 @@ void WaterRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int widt
     ShaderCompiler::CompileShader("Shaders/WaterDomainShader.hlsl", ShaderType::Domain, specs.ShadersBytecodes[ShaderType::Domain]);
     ShaderCompiler::CompileShader("Shaders/WaterPixel.hlsl", ShaderType::Pixel, specs.ShadersBytecodes[ShaderType::Pixel]);
 
-    m_waterTesselationPipeline = renderer->CreateGraphicsPipeline(specs);
+    m_waterTesselationPipeline = device->CreateGraphicsPipeline(specs);
     
-    m_sceneConstantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
-    renderer->CreateConstantBuffer(m_sceneConstantBuffer);
+    m_sceneConstantBuffer = device->CreateBuffer(256, 0, BufferType::Constant, false);
+    device->CreateConstantBuffer(m_sceneConstantBuffer);
 
-    m_waterConstantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
-    renderer->CreateConstantBuffer(m_waterConstantBuffer);
+    m_waterConstantBuffer = device->CreateBuffer(256, 0, BufferType::Constant, false);
+    device->CreateConstantBuffer(m_waterConstantBuffer);
 
     Image noiseImg;
     noiseImg.LoadImageFromFile("Assets/waterNoise.png");
-    m_noiseTex = renderer->CreateTexture(noiseImg.Width, noiseImg.Height, TextureFormat::R8Norm, TextureType::ShaderResource);
-    renderer->CreateShaderResourceView(m_noiseTex);
-    renderer->UploadTextureData(noiseImg, m_noiseTex);
+    m_noiseTex = device->CreateTexture(noiseImg.Width, noiseImg.Height, TextureFormat::R8Norm, TextureType::ShaderResource);
+    device->CreateShaderResourceView(m_noiseTex);
+    device->UploadTextureData(noiseImg, m_noiseTex);
 
     Image normalImg;
     normalImg.LoadImageFromFile("Assets/waterNM1.png");
-    m_normalMap = renderer->CreateTexture(normalImg.Width, normalImg.Height, TextureFormat::RGBA8, TextureType::ShaderResource);
-    renderer->CreateShaderResourceView(m_normalMap);
-    renderer->UploadTextureData(normalImg, m_normalMap);
+    m_normalMap = device->CreateTexture(normalImg.Width, normalImg.Height, TextureFormat::RGBA8, TextureType::ShaderResource);
+    device->CreateShaderResourceView(m_normalMap);
+    device->UploadTextureData(normalImg, m_normalMap);
 
     Image normalImg2;
     normalImg2.LoadImageFromFile("Assets/waterNM2.png");
-    m_normalMap2 = renderer->CreateTexture(normalImg2.Width, normalImg2.Height, TextureFormat::RGBA8, TextureType::ShaderResource);
-    renderer->CreateShaderResourceView(m_normalMap2);
-    renderer->UploadTextureData(normalImg2, m_normalMap2);
+    m_normalMap2 = device->CreateTexture(normalImg2.Width, normalImg2.Height, TextureFormat::RGBA8, TextureType::ShaderResource);
+    device->CreateShaderResourceView(m_normalMap2);
+    device->UploadTextureData(normalImg2, m_normalMap2);
 
-    renderer->FlushUploads();
+    device->FlushUploads();
 }
 
-void WaterRenderPass::OnResize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
+void WaterRenderPass::OnResize(std::shared_ptr<D3D12Driver> device, int width, int height)
 {
 }
 
-void WaterRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTargetInfo)
+void WaterRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTargetInfo)
 {
     bool foundWaterMesh = false;
     for (const auto renderMeshData : renderMeshesData)
@@ -110,7 +110,7 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalPa
         m_waterConstantBuffer->Unmap(0, 0);
     }
 
-    auto commandList = renderer->GetCurrentCommandList();
+    auto commandList = device->GetCurrentCommandList();
     
     commandList->SetTopology(Topology::QuadPatch);
     commandList->BindGraphicsPipeline(m_waterTesselationPipeline);

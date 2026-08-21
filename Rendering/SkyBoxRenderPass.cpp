@@ -2,9 +2,9 @@
 
 #include "DDSTextureLoader/DDSTextureLoader.h"
 
-void SkyBoxRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
+void SkyBoxRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width, int height)
 {
-    m_textureSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
+    m_textureSampler = device->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
     
     GraphicsPipelineSpecs skyboxSpecs;
     skyboxSpecs.FormatCount = 1;
@@ -18,32 +18,32 @@ void SkyBoxRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int wid
     ShaderCompiler::CompileShader("Shaders/SkyBoxVertex.hlsl", ShaderType::Vertex, skyboxSpecs.ShadersBytecodes[ShaderType::Vertex]);
     ShaderCompiler::CompileShader("Shaders/SkyBoxPixel.hlsl", ShaderType::Pixel, skyboxSpecs.ShadersBytecodes[ShaderType::Pixel]);
 
-    m_skyboxPipeline = renderer->CreateGraphicsPipeline(skyboxSpecs);
+    m_skyboxPipeline = device->CreateGraphicsPipeline(skyboxSpecs);
 
-    m_constantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
-    renderer->CreateConstantBuffer(m_constantBuffer);
+    m_constantBuffer = device->CreateBuffer(256, 0, BufferType::Constant, false);
+    device->CreateConstantBuffer(m_constantBuffer);
 
     for(int i = 0; i < 5; i++)
     {
-        m_prefilterConstantBuffers[i] = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
-        renderer->CreateConstantBuffer(m_prefilterConstantBuffers[i]);
+        m_prefilterConstantBuffers[i] = device->CreateBuffer(256, 0, BufferType::Constant, false);
+        device->CreateConstantBuffer(m_prefilterConstantBuffers[i]);
     }
     
     m_sphereMesh = std::make_shared<RenderItem>();
-    m_sphereMesh->ImportMesh(renderer, "Assets/sphere.gltf");
+    m_sphereMesh->ImportMesh(device, "Assets/sphere.gltf");
 
-    m_enviroMaps.SkyBox = renderer->LoadTextureCube(L"Assets/skymap.dds");
+    m_enviroMaps.SkyBox = device->LoadTextureCube(L"Assets/skymap.dds");
 
-    m_enviroMaps.DiffuseIrradianceMap = renderer->CreateTextureCube(128, 128, TextureFormat::RGBA8);
-    m_enviroMaps.PrefilterEnvMap = renderer->CreateTextureCube(512, 512, TextureFormat::RGBA8);
-    m_enviroMaps.BRDFLut = renderer->CreateTexture(512, 512, TextureFormat::RG16Float, TextureType::Storage);
-    renderer->CreateUnorderedAccessView(m_enviroMaps.BRDFLut);
+    m_enviroMaps.DiffuseIrradianceMap = device->CreateTextureCube(128, 128, TextureFormat::RGBA8);
+    m_enviroMaps.PrefilterEnvMap = device->CreateTextureCube(512, 512, TextureFormat::RGBA8);
+    m_enviroMaps.BRDFLut = device->CreateTexture(512, 512, TextureFormat::RG16Float, TextureType::Storage);
+    device->CreateUnorderedAccessView(m_enviroMaps.BRDFLut);
 
     Shader irradianceCS;
     ShaderCompiler::CompileShader("Shaders/IrradianceComputeShader.hlsl", ShaderType::Compute, irradianceCS);
-    auto irradianceCSPipeline = renderer->CreateComputePipeline(irradianceCS);
+    auto irradianceCSPipeline = device->CreateComputePipeline(irradianceCS);
 
-    auto cmdList = renderer->CreateGraphicsCommandList();
+    auto cmdList = device->CreateGraphicsCommandList();
     cmdList->Begin();
     cmdList->BindComputePipeline(irradianceCSPipeline);
     cmdList->ImageBarrier(m_enviroMaps.DiffuseIrradianceMap, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -55,7 +55,7 @@ void SkyBoxRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int wid
 
     Shader prefilterCS;
     ShaderCompiler::CompileShader("Shaders/PrefilterEnvMapComputeShader.hlsl", ShaderType::Compute, prefilterCS);
-    auto prefilterCSPipeline = renderer->CreateComputePipeline(prefilterCS);
+    auto prefilterCSPipeline = device->CreateComputePipeline(prefilterCS);
 
     cmdList->BindComputePipeline(prefilterCSPipeline);
     cmdList->ImageBarrier(m_enviroMaps.PrefilterEnvMap, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -87,7 +87,7 @@ void SkyBoxRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int wid
     /*
     Shader brdfCs;
     ShaderCompiler::CompileShader("Shaders/BRDFComputeShader.hlsl", ShaderType::Compute, brdfCs);
-    auto brdfPipeline = renderer->CreateComputePipeline(brdfCs);
+    auto brdfPipeline = device->CreateComputePipeline(brdfCs);
 
     cmdList->BindComputePipeline(brdfPipeline);
     cmdList->ImageBarrier(m_enviroMaps.BRDFLut, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -97,11 +97,11 @@ void SkyBoxRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int wid
     */
 
     cmdList->End();
-    renderer->ExecuteCommandBuffers({ cmdList }, D3D12_COMMAND_LIST_TYPE_DIRECT);
-    renderer->WaitForGPU();
+    device->ExecuteCommandBuffers({ cmdList }, D3D12_COMMAND_LIST_TYPE_DIRECT);
+    device->WaitForGPU();
 }
 
-void SkyBoxRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
+void SkyBoxRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
 {
     auto view = camera.GetViewMatrix();
     auto proj = camera.GetProjMatrix();
@@ -119,7 +119,7 @@ void SkyBoxRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalP
         m_constantBuffer->Unmap(0, 0);
     }
 
-    auto commandList = renderer->GetCurrentCommandList();
+    auto commandList = device->GetCurrentCommandList();
 
     commandList->SetViewport(0, 0, globalPassData.ViewportSizeX, globalPassData.ViewportSizeY);
 
@@ -141,6 +141,6 @@ void SkyBoxRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalP
     commandList->ImageBarrier(renderTarget.DepthBuffer, D3D12_RESOURCE_STATE_GENERIC_READ);
 }
 
-void SkyBoxRenderPass::OnResize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
+void SkyBoxRenderPass::OnResize(std::shared_ptr<D3D12Driver> device, int width, int height)
 {
 }

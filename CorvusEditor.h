@@ -45,7 +45,7 @@ private:
     void UpdateProjMatrix(float width, float height);
     
     std::shared_ptr<Window> m_window;
-    std::shared_ptr<D3D12Driver> m_renderer;
+    std::shared_ptr<D3D12Driver> m_device;
     std::shared_ptr<GraphicsPipeline> m_trianglePipeline;
     std::shared_ptr<Buffer> m_constantBuffer;
     std::shared_ptr<Buffer> m_lightsConstantBuffer;

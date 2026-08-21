@@ -49,8 +49,8 @@ public:
     RenderItem();
     ~RenderItem();
     
-    void ImportMesh(std::shared_ptr<D3D12Driver> renderer, std::string filePath);
-    void CreateQuadMesh(std::shared_ptr<D3D12Driver> renderer);
+    void ImportMesh(std::shared_ptr<D3D12Driver> device, std::string filePath);
+    void CreateQuadMesh(std::shared_ptr<D3D12Driver> device);
     void SetPath(const std::string& filePath) { m_path = filePath; }
 
     std::string GetPath() { return m_path; }
@@ -59,8 +59,8 @@ public:
     std::string GetMeshIdentifier() { return m_path; }
     
 private:
-    void ProcessPrimitive(std::shared_ptr<D3D12Driver> renderer, aiMesh *mesh, const aiScene *scene);
-    void ProcessNode(std::shared_ptr<D3D12Driver> renderer, aiNode *node, const aiScene *scene);
+    void ProcessPrimitive(std::shared_ptr<D3D12Driver> device, aiMesh *mesh, const aiScene *scene);
+    void ProcessNode(std::shared_ptr<D3D12Driver> device, aiNode *node, const aiScene *scene);
 
     std::string m_path;
     std::vector<Primitive> m_primitives;

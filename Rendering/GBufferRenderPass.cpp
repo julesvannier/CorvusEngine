@@ -1,8 +1,8 @@
 ﻿#include "GBufferRenderPass.h"
 
-void GBufferRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
+void GBufferRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width, int height)
 {
-    m_textureSampler = renderer->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
+    m_textureSampler = device->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
 
     GraphicsPipelineSpecs geomSpecs;
     geomSpecs.FormatCount = 4;
@@ -19,41 +19,41 @@ void GBufferRenderPass::Initialize(std::shared_ptr<D3D12Driver> renderer, int wi
     ShaderCompiler::CompileShader("Shaders/SimpleVertex.hlsl", ShaderType::Vertex, geomSpecs.ShadersBytecodes[ShaderType::Vertex]);
     ShaderCompiler::CompileShader("Shaders/DeferredGBufferPixel.hlsl", ShaderType::Pixel, geomSpecs.ShadersBytecodes[ShaderType::Pixel]);
 
-    m_deferredGeometryPipeline = renderer->CreateGraphicsPipeline(geomSpecs);
+    m_deferredGeometryPipeline = device->CreateGraphicsPipeline(geomSpecs);
 
-    m_sceneConstantBuffer = renderer->CreateBuffer(256, 0, BufferType::Constant, false);
-    renderer->CreateConstantBuffer(m_sceneConstantBuffer);
+    m_sceneConstantBuffer = device->CreateBuffer(256, 0, BufferType::Constant, false);
+    device->CreateConstantBuffer(m_sceneConstantBuffer);
 
-    OnResize(renderer, width, height);
+    OnResize(device, width, height);
 }
 
-void GBufferRenderPass::OnResize(std::shared_ptr<D3D12Driver> renderer, int width, int height)
+void GBufferRenderPass::OnResize(std::shared_ptr<D3D12Driver> device, int width, int height)
 {
     m_GBuffer.AlbedoRenderTarget.reset();
     m_GBuffer.NormalRenderTarget.reset();
     m_GBuffer.MetallicRoughnessRenderTarget.reset();
     m_GBuffer.DepthBuffer.reset();
     
-    m_GBuffer.DepthBuffer = renderer->CreateTexture(width, height, TextureFormat::R32Depth, TextureType::DepthTarget);
-    renderer->CreateDepthView(m_GBuffer.DepthBuffer);
+    m_GBuffer.DepthBuffer = device->CreateTexture(width, height, TextureFormat::R32Depth, TextureType::DepthTarget);
+    device->CreateDepthView(m_GBuffer.DepthBuffer);
     m_GBuffer.DepthBuffer->SetFormat(TextureFormat::R32Float);
-    renderer->CreateShaderResourceView(m_GBuffer.DepthBuffer);
+    device->CreateShaderResourceView(m_GBuffer.DepthBuffer);
     m_GBuffer.DepthBuffer->SetFormat(TextureFormat::R32Depth);
     
-    m_GBuffer.AlbedoRenderTarget = renderer->CreateTexture(width, height, TextureFormat::R11G11B10Float, TextureType::RenderTarget);
-    renderer->CreateRenderTargetView(m_GBuffer.AlbedoRenderTarget);
-    renderer->CreateShaderResourceView(m_GBuffer.AlbedoRenderTarget);
+    m_GBuffer.AlbedoRenderTarget = device->CreateTexture(width, height, TextureFormat::R11G11B10Float, TextureType::RenderTarget);
+    device->CreateRenderTargetView(m_GBuffer.AlbedoRenderTarget);
+    device->CreateShaderResourceView(m_GBuffer.AlbedoRenderTarget);
 
-    m_GBuffer.NormalRenderTarget = renderer->CreateTexture(width, height, TextureFormat::RGBA8SNorm, TextureType::RenderTarget);
-    renderer->CreateRenderTargetView(m_GBuffer.NormalRenderTarget);
-    renderer->CreateShaderResourceView(m_GBuffer.NormalRenderTarget);
+    m_GBuffer.NormalRenderTarget = device->CreateTexture(width, height, TextureFormat::RGBA8SNorm, TextureType::RenderTarget);
+    device->CreateRenderTargetView(m_GBuffer.NormalRenderTarget);
+    device->CreateShaderResourceView(m_GBuffer.NormalRenderTarget);
 
-    m_GBuffer.MetallicRoughnessRenderTarget = renderer->CreateTexture(width, height, TextureFormat::R11G11B10Float, TextureType::RenderTarget);
-    renderer->CreateRenderTargetView(m_GBuffer.MetallicRoughnessRenderTarget);
-    renderer->CreateShaderResourceView(m_GBuffer.MetallicRoughnessRenderTarget);
+    m_GBuffer.MetallicRoughnessRenderTarget = device->CreateTexture(width, height, TextureFormat::R11G11B10Float, TextureType::RenderTarget);
+    device->CreateRenderTargetView(m_GBuffer.MetallicRoughnessRenderTarget);
+    device->CreateShaderResourceView(m_GBuffer.MetallicRoughnessRenderTarget);
 }
 
-void GBufferRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
+void GBufferRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPassData& globalPassData, const Camera& camera, const std::vector<RenderMeshData>& renderMeshesData, RenderTargetInfo renderTarget)
 {
     auto view = camera.GetViewMatrix();
     auto proj = camera.GetProjMatrix();
@@ -82,7 +82,7 @@ void GBufferRenderPass::Pass(std::shared_ptr<D3D12Driver> renderer, const Global
         m_sceneConstantBuffer->Unmap(0, 0);
     }
     
-    auto commandList = renderer->GetCurrentCommandList();
+    auto commandList = device->GetCurrentCommandList();
 
     commandList->SetViewport(0, 0, globalPassData.ViewportSizeX, globalPassData.ViewportSizeY);
 

@@ -41,37 +41,37 @@ CorvusEditor::CorvusEditor()
             return;
 
         LOG(Debug, "Window resize !");
-        m_renderer->Resize(width, height);
+        m_device->Resize(width, height);
     });
 
-    m_renderer = std::make_shared<D3D12Driver>(m_window->GetHandle());
+    m_device = std::make_shared<D3D12Driver>(m_window->GetHandle());
 
-    m_resourceManager = std::make_shared<ResourcesManager>(m_renderer);
+    m_resourceManager = std::make_shared<ResourcesManager>(m_device);
 
     m_shadowRenderPass = std::make_shared<ShadowRenderPass>();
-    m_shadowRenderPass->Initialize(m_renderer, m_shadowMapResolution, m_shadowMapResolution);
+    m_shadowRenderPass->Initialize(m_device, m_shadowMapResolution, m_shadowMapResolution);
 
     m_GBufferRenderPass = std::make_shared<GBufferRenderPass>();
-    m_GBufferRenderPass->Initialize(m_renderer, defaultWidth, defaultHeight);
+    m_GBufferRenderPass->Initialize(m_device, defaultWidth, defaultHeight);
 
     m_SSAORenderPass = std::make_shared<SSAORenderPass>();
-    m_SSAORenderPass->Initialize(m_renderer, defaultWidth / 2, defaultHeight / 2);
+    m_SSAORenderPass->Initialize(m_device, defaultWidth / 2, defaultHeight / 2);
 
     m_deferredLightingPass = std::make_shared<LightingRenderPass>();
-    m_deferredLightingPass->Initialize(m_renderer, defaultWidth, defaultHeight);
+    m_deferredLightingPass->Initialize(m_device, defaultWidth, defaultHeight);
 
     m_skyboxPass = std::make_shared<SkyBoxRenderPass>();
-    m_skyboxPass->Initialize(m_renderer, defaultWidth, defaultHeight);
+    m_skyboxPass->Initialize(m_device, defaultWidth, defaultHeight);
 
     m_transparencyPass = std::make_shared<TransparencyRenderPass>();
-    m_transparencyPass->Initialize(m_renderer, defaultWidth, defaultHeight);
+    m_transparencyPass->Initialize(m_device, defaultWidth, defaultHeight);
 
     m_waterPass = std::make_shared<WaterRenderPass>();
-    m_waterPass->Initialize(m_renderer, defaultWidth, defaultHeight);
+    m_waterPass->Initialize(m_device, defaultWidth, defaultHeight);
 
-    m_sceneRenderTexture = m_renderer->CreateTexture(defaultWidth, defaultHeight, TextureFormat::RGBA8, TextureType::RenderTarget);
-    m_renderer->CreateRenderTargetView(m_sceneRenderTexture);
-    m_renderer->CreateShaderResourceView(m_sceneRenderTexture);
+    m_sceneRenderTexture = m_device->CreateTexture(defaultWidth, defaultHeight, TextureFormat::RGBA8, TextureType::RenderTarget);
+    m_device->CreateRenderTargetView(m_sceneRenderTexture);
+    m_device->CreateShaderResourceView(m_sceneRenderTexture);
 
     m_scene = std::make_shared<Scene>("DemoScene");
 
@@ -155,7 +155,7 @@ CorvusEditor::CorvusEditor()
 
     for(auto pair : m_meshesInstancesCount)
     {
-        auto instancesBuffer = m_renderer->CreateBuffer(sizeof(InstanceData) * pair.second, sizeof(InstanceData), BufferType::Structured, false);
+        auto instancesBuffer = m_device->CreateBuffer(sizeof(InstanceData) * pair.second, sizeof(InstanceData), BufferType::Structured, false);
         m_meshesInstancesBuffers.emplace(pair.first, instancesBuffer);
     }
 
@@ -210,7 +210,7 @@ void CorvusEditor::Run()
         m_camera.UpdateViewMatrix();
         m_camera.UpdateInvViewProjMatrix(m_viewportCachedSize.x, m_viewportCachedSize.y);
 
-        // ----------------------------------------------------------- ECS data -> renderer ----------------------------------------------------------
+        // ----------------------------------------------------------- ECS data -> device ----------------------------------------------------------
 
         std::unordered_map<std::string, RenderMeshData> renderMeshesData;
         std::vector<PointLight> pointLights;
@@ -275,8 +275,8 @@ void CorvusEditor::Run()
 
         // ------------------------------------------------------------- Render Passes --------------------------------------------------------------------
 
-        auto commandList = m_renderer->GetCurrentCommandList();
-        auto backbuffer = m_renderer->GetBackBuffer();
+        auto commandList = m_device->GetCurrentCommandList();
+        auto backbuffer = m_device->GetBackBuffer();
         
         commandList->Begin();
         commandList->ImageBarrier(backbuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -290,51 +290,51 @@ void CorvusEditor::Run()
         
         if(m_enableShadows)
         {
-            m_shadowRenderPass->Pass(m_renderer, passData, m_camera, RMDs, rtInfo);
+            m_shadowRenderPass->Pass(m_device, passData, m_camera, RMDs, rtInfo);
             passData.ShadowMap = m_shadowRenderPass->GetShadowMap();
         }
 
-        m_GBufferRenderPass->Pass(m_renderer, passData, m_camera, RMDs, rtInfo);
+        m_GBufferRenderPass->Pass(m_device, passData, m_camera, RMDs, rtInfo);
         passData.GBuffer = m_GBufferRenderPass->GetGBuffer();
 
         if(m_enableSSAO)
-            m_SSAORenderPass->Pass(m_renderer, passData, m_camera, RMDs, rtInfo);
+            m_SSAORenderPass->Pass(m_device, passData, m_camera, RMDs, rtInfo);
         
-        m_deferredLightingPass->Pass(m_renderer, passData, m_camera, RMDs, rtInfo);
+        m_deferredLightingPass->Pass(m_device, passData, m_camera, RMDs, rtInfo);
 
         if(m_enableSkyBox)
         {
             rtInfo.DepthBuffer = m_GBufferRenderPass->GetGBuffer().DepthBuffer;
-            m_skyboxPass->Pass(m_renderer, passData, m_camera, {}, rtInfo);
+            m_skyboxPass->Pass(m_device, passData, m_camera, {}, rtInfo);
         }
 
         if (m_renderTransparentObjects)
         {
             rtInfo.DepthBuffer = m_GBufferRenderPass->GetGBuffer().DepthBuffer;
-            m_transparencyPass->Pass(m_renderer, passData, m_camera, RMDs, rtInfo);
+            m_transparencyPass->Pass(m_device, passData, m_camera, RMDs, rtInfo);
         }
 
         if (m_renderWater)
         {
             rtInfo.DepthBuffer = m_GBufferRenderPass->GetGBuffer().DepthBuffer;
-            m_waterPass->Pass(m_renderer, passData, m_camera, RMDs, rtInfo);
+            m_waterPass->Pass(m_device, passData, m_camera, RMDs, rtInfo);
         }
 
         // ------------------------------------------------------------- UI Rendering --------------------------------------------------------------------
         
         commandList->BindRenderTargets({ backbuffer }, nullptr);
-        m_renderer->BeginImGuiFrame();
+        m_device->BeginImGuiFrame();
         RenderUI((float)width, (float)height);
-        m_renderer->EndImGuiFrame();
+        m_device->EndImGuiFrame();
         
         commandList->ImageBarrier(backbuffer, D3D12_RESOURCE_STATE_PRESENT);
         commandList->End();
-        m_renderer->ExecuteCommandBuffers({ commandList }, D3D12_COMMAND_LIST_TYPE_DIRECT);
+        m_device->ExecuteCommandBuffers({ commandList }, D3D12_COMMAND_LIST_TYPE_DIRECT);
 
-        // m_renderer->WaitForGPU();
+        // m_device->WaitForGPU();
 
-        m_renderer->Present(m_vsync);
-        m_renderer->EndFrame();
+        m_device->Present(m_vsync);
+        m_device->EndFrame();
 
         m_window->BroadCast();
     }
@@ -372,8 +372,8 @@ std::shared_ptr<GameObject> CorvusEditor::AddModelToScene(std::string name, cons
 
     model->GetMaterial().IsTransparent = transparent;
 
-    if(m_renderer->HasPendingUploads())
-        m_renderer->FlushUploads();
+    if(m_device->HasPendingUploads())
+        m_device->FlushUploads();
 
     auto idRmd = m_meshesInstancesCount.find(modelPath);
     if(idRmd != m_meshesInstancesCount.end())
@@ -398,7 +398,7 @@ std::shared_ptr<GameObject> CorvusEditor::AddWaterToScene(DirectX::XMFLOAT3 posi
     auto quad = std::make_shared<RenderItem>();
     const std::string quadIdentifier = "QuadMesh";
     quad->SetPath(quadIdentifier);
-    quad->CreateQuadMesh(m_renderer);
+    quad->CreateQuadMesh(m_device);
 
     quad->GetMaterial().IsTransparent = false;
     quad->GetMaterial().CastShadows = false;
@@ -747,15 +747,15 @@ void CorvusEditor::RenderUI(float width, float height)
             m_viewportCachedSize = viewportSize;
 
             m_sceneRenderTexture.reset();
-            m_sceneRenderTexture = m_renderer->CreateTexture(m_viewportCachedSize.x, m_viewportCachedSize.y, TextureFormat::RGBA8, TextureType::RenderTarget);
-            m_renderer->CreateRenderTargetView(m_sceneRenderTexture);
-            m_renderer->CreateShaderResourceView(m_sceneRenderTexture);
+            m_sceneRenderTexture = m_device->CreateTexture(m_viewportCachedSize.x, m_viewportCachedSize.y, TextureFormat::RGBA8, TextureType::RenderTarget);
+            m_device->CreateRenderTargetView(m_sceneRenderTexture);
+            m_device->CreateShaderResourceView(m_sceneRenderTexture);
 
-            m_GBufferRenderPass->OnResize(m_renderer, m_viewportCachedSize.x, m_viewportCachedSize.y);
-            m_SSAORenderPass->OnResize(m_renderer, m_viewportCachedSize.x / 2, m_viewportCachedSize.y / 2);
-            m_deferredLightingPass->OnResize(m_renderer, m_viewportCachedSize.x, m_viewportCachedSize.y);
-            m_skyboxPass->OnResize(m_renderer, m_viewportCachedSize.x, m_viewportCachedSize.y);
-            m_transparencyPass->OnResize(m_renderer, m_viewportCachedSize.x, m_viewportCachedSize.y);
+            m_GBufferRenderPass->OnResize(m_device, m_viewportCachedSize.x, m_viewportCachedSize.y);
+            m_SSAORenderPass->OnResize(m_device, m_viewportCachedSize.x / 2, m_viewportCachedSize.y / 2);
+            m_deferredLightingPass->OnResize(m_device, m_viewportCachedSize.x, m_viewportCachedSize.y);
+            m_skyboxPass->OnResize(m_device, m_viewportCachedSize.x, m_viewportCachedSize.y);
+            m_transparencyPass->OnResize(m_device, m_viewportCachedSize.x, m_viewportCachedSize.y);
             UpdateProjMatrix(m_viewportCachedSize.x, m_viewportCachedSize.y);
         }
 
