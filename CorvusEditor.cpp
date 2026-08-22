@@ -69,7 +69,7 @@ CorvusEditor::CorvusEditor()
     m_waterPass = std::make_shared<WaterRenderPass>();
     m_waterPass->Initialize(m_device, defaultWidth, defaultHeight);
 
-    m_sceneRenderTexture = m_device->CreateTexture(defaultWidth, defaultHeight, TextureFormat::RGBA8, TextureType::RenderTarget);
+    m_sceneRenderTexture = m_device->CreateTexture(defaultWidth, defaultHeight, TextureFormat::RGBA8, TextureType::RenderTarget, "SceneRenderTexture");
     m_device->CreateRenderTargetView(m_sceneRenderTexture);
     m_device->CreateShaderResourceView(m_sceneRenderTexture);
 
@@ -176,6 +176,8 @@ CorvusEditor::~CorvusEditor()
 {
     LOG(Debug, "Destroying Corvus Editor");
 
+    m_device->WaitForGPU();
+
     InputSystem::Get()->RemoveListener(this);
     InputSystem::Release();
     
@@ -279,9 +281,9 @@ void CorvusEditor::Run()
         auto backbuffer = m_device->GetBackBuffer();
         
         commandList->Begin();
-        commandList->ImageBarrier(backbuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
         commandList->SetViewport(0, 0, width, height);
-        commandList->BindRenderTargets({ backbuffer }, nullptr);
+        commandList->ImageBarrier(backbuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+        commandList->ImageBarrier(m_sceneRenderTexture, D3D12_RESOURCE_STATE_RENDER_TARGET);
         commandList->ClearRenderTarget(backbuffer, 0.0f, 0.0f, 0.0f, 1.0f);
         commandList->ClearRenderTarget(m_sceneRenderTexture, 0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -326,12 +328,12 @@ void CorvusEditor::Run()
         m_device->BeginImGuiFrame();
         RenderUI((float)width, (float)height);
         m_device->EndImGuiFrame();
+
+        // ------------------------------------------------------------- Present --------------------------------------------------------------------
         
         commandList->ImageBarrier(backbuffer, D3D12_RESOURCE_STATE_PRESENT);
         commandList->End();
         m_device->ExecuteCommandBuffers({ commandList }, D3D12_COMMAND_LIST_TYPE_DIRECT);
-
-        // m_device->WaitForGPU();
 
         m_device->Present(m_vsync);
         m_device->EndFrame();
@@ -747,7 +749,7 @@ void CorvusEditor::RenderUI(float width, float height)
             m_viewportCachedSize = viewportSize;
 
             m_sceneRenderTexture.reset();
-            m_sceneRenderTexture = m_device->CreateTexture(m_viewportCachedSize.x, m_viewportCachedSize.y, TextureFormat::RGBA8, TextureType::RenderTarget);
+            m_sceneRenderTexture = m_device->CreateTexture(m_viewportCachedSize.x, m_viewportCachedSize.y, TextureFormat::RGBA8, TextureType::RenderTarget, "SceneRenderTexture");
             m_device->CreateRenderTargetView(m_sceneRenderTexture);
             m_device->CreateShaderResourceView(m_sceneRenderTexture);
 

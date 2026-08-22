@@ -1,7 +1,7 @@
 ﻿#include "Device.h"
 #include <dxgi1_6.h>
 
-#define ENABLE_DEBUG_LAYER 0
+#define ENABLE_DEBUG_LAYER 1
 
 Device::Device()
 {

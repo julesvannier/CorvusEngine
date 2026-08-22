@@ -24,7 +24,7 @@ std::shared_ptr<Texture> ResourcesManager::LoadTexture(const std::string& texPat
         }
 
         img.LoadImageFromFile(texPath);
-        auto texture = device->CreateTexture(img.Width, img.Height, TextureFormat::RGBA8, TextureType::ShaderResource);
+        auto texture = device->CreateTexture(img.Width, img.Height, TextureFormat::RGBA8, TextureType::ShaderResource, texPath.c_str());
         device->CreateShaderResourceView(texture);
         device->UploadTextureData(img, texture);
 

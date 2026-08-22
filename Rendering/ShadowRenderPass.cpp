@@ -129,7 +129,7 @@ void ShadowRenderPass::OnResize(std::shared_ptr<D3D12Driver> device, int width, 
     
     m_shadowMap.DepthBuffer.reset();
 
-    m_shadowMap.DepthBuffer = device->CreateTexture(width, height, TextureFormat::R32Depth, TextureType::DepthTarget);
+    m_shadowMap.DepthBuffer = device->CreateTexture(width, height, TextureFormat::R32Depth, TextureType::DepthTarget, "ShadowMap");
     device->CreateDepthView(m_shadowMap.DepthBuffer);
     m_shadowMap.DepthBuffer->SetFormat(TextureFormat::R32Float);
     device->CreateShaderResourceView(m_shadowMap.DepthBuffer);

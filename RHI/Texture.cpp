@@ -22,7 +22,7 @@ Texture::Texture(std::shared_ptr<Device> device) : m_device(device)
 {
 }
 
-Texture::Texture(std::shared_ptr<Device> device, std::shared_ptr<Allocator> allocator, uint32_t width, uint32_t height, TextureFormat format, TextureType type)
+Texture::Texture(std::shared_ptr<Device> device, std::shared_ptr<Allocator> allocator, uint32_t width, uint32_t height, TextureFormat format, TextureType type, const char* name)
     : m_device(device), m_format(format), m_width(width), m_height(height)
 {
     switch(type)
@@ -62,6 +62,13 @@ Texture::Texture(std::shared_ptr<Device> device, std::shared_ptr<Allocator> allo
 
     m_resource = allocator->Allocate(&AllocationDesc, &ResourceDesc, m_state);
     m_hasAlloc = true;
+
+    if (name)
+    {
+        m_name = name;
+        std::wstring wideName(name, name + strlen(name));
+        m_resource.Resource->SetName(wideName.c_str());
+    }
 }
 
 Texture::~Texture()

@@ -47,10 +47,10 @@ public:
     void CreateShaderResourceView(std::shared_ptr<Texture> texture);
     void CreateRenderTargetView(std::shared_ptr<Texture> texture);
     void CreateUnorderedAccessView(std::shared_ptr<Texture> texture);
-    std::shared_ptr<Texture> CreateTexture(int width, int height, TextureFormat format, TextureType type);
+    std::shared_ptr<Texture> CreateTexture(int width, int height, TextureFormat format, TextureType type, const char* name = nullptr);
     std::shared_ptr<Sampler> CreateSampler(D3D12_TEXTURE_ADDRESS_MODE addressMode, D3D12_FILTER filter);
     std::shared_ptr<TextureCube> LoadTextureCube(const std::wstring& filePath);
-    std::shared_ptr<TextureCube> CreateTextureCube(uint32_t width, uint32_t height, TextureFormat format);
+    std::shared_ptr<TextureCube> CreateTextureCube(uint32_t width, uint32_t height, TextureFormat format, const char* name = nullptr);
     std::shared_ptr<CommandList> CreateGraphicsCommandList();
 
     void UploadBufferData(void* pData, uint64_t size, std::shared_ptr<Buffer> destBuffer);

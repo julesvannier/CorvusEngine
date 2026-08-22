@@ -237,9 +237,9 @@ void D3D12Driver::CreateUnorderedAccessView(std::shared_ptr<Texture> texture)
     texture->CreateUnorderedAccessView(m_heaps.ShaderHeap);
 }
 
-std::shared_ptr<Texture> D3D12Driver::CreateTexture(int width, int height, TextureFormat format, TextureType type)
+std::shared_ptr<Texture> D3D12Driver::CreateTexture(int width, int height, TextureFormat format, TextureType type, const char* name)
 {
-    return std::make_shared<Texture>(m_device, m_allocator, width, height, format, type);
+    return std::make_shared<Texture>(m_device, m_allocator, width, height, format, type, name);
 }
 
 std::shared_ptr<Sampler> D3D12Driver::CreateSampler(D3D12_TEXTURE_ADDRESS_MODE addressMode, D3D12_FILTER filter)
@@ -261,9 +261,9 @@ std::shared_ptr<TextureCube> D3D12Driver::LoadTextureCube(const std::wstring& fi
     return TexCube;
 }
 
-std::shared_ptr<TextureCube> D3D12Driver::CreateTextureCube(uint32_t width, uint32_t height, TextureFormat format)
+std::shared_ptr<TextureCube> D3D12Driver::CreateTextureCube(uint32_t width, uint32_t height, TextureFormat format, const char* name)
 {
-    return std::make_shared<TextureCube>(m_device, m_allocator, width, height, format, m_heaps);
+    return std::make_shared<TextureCube>(m_device, m_allocator, width, height, format, m_heaps, name);
 }
 
 std::shared_ptr<CommandList> D3D12Driver::CreateGraphicsCommandList()

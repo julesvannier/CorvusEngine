@@ -31,19 +31,19 @@ void WaterRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width,
 
     Image noiseImg;
     noiseImg.LoadImageFromFile("Assets/waterNoise.png");
-    m_noiseTex = device->CreateTexture(noiseImg.Width, noiseImg.Height, TextureFormat::R8Norm, TextureType::ShaderResource);
+    m_noiseTex = device->CreateTexture(noiseImg.Width, noiseImg.Height, TextureFormat::R8Norm, TextureType::ShaderResource, "WaterNoise");
     device->CreateShaderResourceView(m_noiseTex);
     device->UploadTextureData(noiseImg, m_noiseTex);
 
     Image normalImg;
     normalImg.LoadImageFromFile("Assets/waterNM1.png");
-    m_normalMap = device->CreateTexture(normalImg.Width, normalImg.Height, TextureFormat::RGBA8, TextureType::ShaderResource);
+    m_normalMap = device->CreateTexture(normalImg.Width, normalImg.Height, TextureFormat::RGBA8, TextureType::ShaderResource, "WaterNormalMap1");
     device->CreateShaderResourceView(m_normalMap);
     device->UploadTextureData(normalImg, m_normalMap);
 
     Image normalImg2;
     normalImg2.LoadImageFromFile("Assets/waterNM2.png");
-    m_normalMap2 = device->CreateTexture(normalImg2.Width, normalImg2.Height, TextureFormat::RGBA8, TextureType::ShaderResource);
+    m_normalMap2 = device->CreateTexture(normalImg2.Width, normalImg2.Height, TextureFormat::RGBA8, TextureType::ShaderResource, "WaterNormalMap2");
     device->CreateShaderResourceView(m_normalMap2);
     device->UploadTextureData(normalImg2, m_normalMap2);
 

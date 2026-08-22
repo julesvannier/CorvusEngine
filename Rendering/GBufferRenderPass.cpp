@@ -34,21 +34,21 @@ void GBufferRenderPass::OnResize(std::shared_ptr<D3D12Driver> device, int width,
     m_GBuffer.MetallicRoughnessRenderTarget.reset();
     m_GBuffer.DepthBuffer.reset();
     
-    m_GBuffer.DepthBuffer = device->CreateTexture(width, height, TextureFormat::R32Depth, TextureType::DepthTarget);
+    m_GBuffer.DepthBuffer = device->CreateTexture(width, height, TextureFormat::R32Depth, TextureType::DepthTarget, "GBuffer_Depth");
     device->CreateDepthView(m_GBuffer.DepthBuffer);
     m_GBuffer.DepthBuffer->SetFormat(TextureFormat::R32Float);
     device->CreateShaderResourceView(m_GBuffer.DepthBuffer);
     m_GBuffer.DepthBuffer->SetFormat(TextureFormat::R32Depth);
     
-    m_GBuffer.AlbedoRenderTarget = device->CreateTexture(width, height, TextureFormat::R11G11B10Float, TextureType::RenderTarget);
+    m_GBuffer.AlbedoRenderTarget = device->CreateTexture(width, height, TextureFormat::R11G11B10Float, TextureType::RenderTarget, "GBuffer_Albedo");
     device->CreateRenderTargetView(m_GBuffer.AlbedoRenderTarget);
     device->CreateShaderResourceView(m_GBuffer.AlbedoRenderTarget);
 
-    m_GBuffer.NormalRenderTarget = device->CreateTexture(width, height, TextureFormat::RGBA8SNorm, TextureType::RenderTarget);
+    m_GBuffer.NormalRenderTarget = device->CreateTexture(width, height, TextureFormat::RGBA8SNorm, TextureType::RenderTarget, "GBuffer_Normal");
     device->CreateRenderTargetView(m_GBuffer.NormalRenderTarget);
     device->CreateShaderResourceView(m_GBuffer.NormalRenderTarget);
 
-    m_GBuffer.MetallicRoughnessRenderTarget = device->CreateTexture(width, height, TextureFormat::R11G11B10Float, TextureType::RenderTarget);
+    m_GBuffer.MetallicRoughnessRenderTarget = device->CreateTexture(width, height, TextureFormat::R11G11B10Float, TextureType::RenderTarget, "GBuffer_MetallicRoughness");
     device->CreateRenderTargetView(m_GBuffer.MetallicRoughnessRenderTarget);
     device->CreateShaderResourceView(m_GBuffer.MetallicRoughnessRenderTarget);
 }

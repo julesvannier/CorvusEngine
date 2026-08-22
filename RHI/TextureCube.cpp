@@ -28,9 +28,13 @@ TextureCube::TextureCube(std::shared_ptr<Device> device, std::shared_ptr<Command
     device->GetDevice()->CreateShaderResourceView(m_resourceComPtr.Get(), &srvDesc, m_srv.CPU);
 
     m_resource.Resource = m_resourceComPtr.Get();
+    m_name.resize(filePath.size());
+    for (size_t i = 0; i < filePath.size(); i++)
+        m_name[i] = static_cast<char>(filePath[i]);
+    m_resourceComPtr->SetName(filePath.c_str());
 }
 
-TextureCube::TextureCube(std::shared_ptr<Device> device, std::shared_ptr<Allocator> allocator, uint32_t width, uint32_t height, TextureFormat format, Heaps& heaps)
+TextureCube::TextureCube(std::shared_ptr<Device> device, std::shared_ptr<Allocator> allocator, uint32_t width, uint32_t height, TextureFormat format, Heaps& heaps, const char* name)
 {
     D3D12MA::ALLOCATION_DESC allocDesc = {};
     allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
@@ -52,6 +56,13 @@ TextureCube::TextureCube(std::shared_ptr<Device> device, std::shared_ptr<Allocat
 
     m_resource = allocator->Allocate(&allocDesc, &resourceDesc, m_state);
     m_hasAlloc = true;
+
+    if (name)
+    {
+        m_name = name;
+        std::wstring wideName(name, name + strlen(name));
+        m_resource.Resource->SetName(wideName.c_str());
+    }
 
     auto shaderHeap = heaps.ShaderHeap;
     m_srv = shaderHeap->Allocate();

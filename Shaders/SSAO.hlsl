@@ -30,11 +30,9 @@ void Main(uint3 ThreadID : SV_DispatchThreadID)
     case 0:
         OutSSAOTexture[ThreadID.xy] = Depth.Sample(Sampler, depthUV).x;
         break;
-
     case 1:
         OutSSAOTexture[ThreadID.xy] = Normal.Sample(Sampler, normalUV).x;
         break;
-        
     default:
         OutSSAOTexture[ThreadID.xy] = 1.0f;
         break;

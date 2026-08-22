@@ -47,6 +47,10 @@ SwapChain::SwapChain(std::shared_ptr<Device> device, std::shared_ptr<CommandQueu
         m_textures[i]->m_rtv = m_descriptors[i];
         m_textures[i]->m_format = TextureFormat::RGBA8;
         m_textures[i]->SetState(D3D12_RESOURCE_STATE_COMMON);
+
+        m_textures[i]->m_name = "BackBuffer" + std::to_string(i);
+        std::wstring backBufferName = L"BackBuffer" + std::to_wstring(i);
+        m_buffers[i]->SetName(backBufferName.c_str());
     }
 
     LOG(Debug, "Swap Chain created !");
@@ -113,6 +117,9 @@ void SwapChain::Resize(uint32_t width, uint32_t height)
             m_textures[i]->m_rtv = m_descriptors[i];
             m_textures[i]->m_format = TextureFormat::RGBA8;
             m_textures[i]->SetState(D3D12_RESOURCE_STATE_COMMON);
+
+            std::wstring backBufferName = L"BackBuffer" + std::to_wstring(i);
+            m_buffers[i]->SetName(backBufferName.c_str());
         }
     }
 }

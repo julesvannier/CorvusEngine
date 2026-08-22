@@ -32,7 +32,7 @@ class Texture
 {
 public:
     Texture(std::shared_ptr<Device> device);
-    Texture(std::shared_ptr<Device> device, std::shared_ptr<Allocator> allocator, uint32_t width, uint32_t height, TextureFormat format, TextureType type);
+    Texture(std::shared_ptr<Device> device, std::shared_ptr<Allocator> allocator, uint32_t width, uint32_t height, TextureFormat format, TextureType type, const char* name = nullptr);
     ~Texture();
 
     void CreateRenderTarget(std::shared_ptr<DescriptorHeap> heap);
@@ -45,6 +45,7 @@ public:
     GPUResource& GetResource() { return m_resource; }
     TextureFormat GetFormat() { return m_format; }
     void SetFormat(TextureFormat format) { m_format = format; }
+    const std::string& GetName() { return m_name; }
 
     DescriptorHandle m_rtv;
     DescriptorHandle m_dsv;
@@ -55,6 +56,7 @@ private:
     friend class CommandList;
 
     std::shared_ptr<Device> m_device;
+    std::string m_name;
     TextureFormat m_format;
     D3D12_RESOURCE_STATES m_state;
     int m_width;

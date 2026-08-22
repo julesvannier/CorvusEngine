@@ -34,9 +34,9 @@ void SkyBoxRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width
 
     m_enviroMaps.SkyBox = device->LoadTextureCube(L"Assets/skymap.dds");
 
-    m_enviroMaps.DiffuseIrradianceMap = device->CreateTextureCube(128, 128, TextureFormat::RGBA8);
-    m_enviroMaps.PrefilterEnvMap = device->CreateTextureCube(512, 512, TextureFormat::RGBA8);
-    m_enviroMaps.BRDFLut = device->CreateTexture(512, 512, TextureFormat::RG16Float, TextureType::Storage);
+    m_enviroMaps.DiffuseIrradianceMap = device->CreateTextureCube(128, 128, TextureFormat::RGBA8, "DiffuseIrradianceMap");
+    m_enviroMaps.PrefilterEnvMap = device->CreateTextureCube(512, 512, TextureFormat::RGBA8, "PrefilterEnvMap");
+    m_enviroMaps.BRDFLut = device->CreateTexture(512, 512, TextureFormat::RG16Float, TextureType::Storage, "BRDFLut");
     device->CreateUnorderedAccessView(m_enviroMaps.BRDFLut);
 
     Shader irradianceCS;

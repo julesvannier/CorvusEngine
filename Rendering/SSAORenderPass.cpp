@@ -15,64 +15,7 @@ void SSAORenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width, 
 
     m_noiseSampler = device->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_FILTER_MIN_MAG_MIP_POINT);
 
-    GenerateKernel(device);
-    GenerateNoiseTexture(device);
-
     OnResize(device, width, height);
-}
-
-void SSAORenderPass::GenerateKernel(std::shared_ptr<D3D12Driver> device)
-{
-    std::vector<DirectX::XMFLOAT4> kernel;
-    kernel.reserve(KernelSize);
-
-    for (int i = 0; i < KernelSize; i++)
-    {
-        DirectX::XMVECTOR sample = DirectX::XMVectorSet(
-            Utilities::RandomFloatRange(-1.0f, 1.0f),
-            Utilities::RandomFloatRange(-1.0f, 1.0f),
-            Utilities::RandomFloatRange(0.0f, 1.0f),
-            0.0f);
-
-        sample = DirectX::XMVector3Normalize(sample);
-        sample = DirectX::XMVectorScale(sample, Utilities::RandomFloatRange(0.0f, 1.0f));
-
-        float scale = (float)i / (float)KernelSize;
-        scale = Utilities::Lerp(0.1f, 1.0f, scale * scale);
-        sample = DirectX::XMVectorScale(sample, scale);
-
-        DirectX::XMFLOAT4 sampleF4;
-        DirectX::XMStoreFloat4(&sampleF4, sample);
-        kernel.push_back(sampleF4);
-    }
-
-    m_kernelBuffer = device->CreateBuffer(KernelSize * sizeof(DirectX::XMFLOAT4), sizeof(DirectX::XMFLOAT4), BufferType::Structured, false);
-    device->UploadBufferData(kernel.data(), KernelSize * sizeof(DirectX::XMFLOAT4), m_kernelBuffer);
-    device->FlushUploads();
-}
-
-void SSAORenderPass::GenerateNoiseTexture(std::shared_ptr<D3D12Driver> device)
-{
-    Image noiseImg;
-    noiseImg.Width = NoiseDim;
-    noiseImg.Height = NoiseDim;
-    noiseImg.Bytes = new char[NoiseDim * NoiseDim * 4];
-
-    for (int i = 0; i < NoiseDim * NoiseDim; i++)
-    {
-        int8_t x = (int8_t)(Utilities::RandomFloatRange(-1.0f, 1.0f) * 127.0f);
-        int8_t y = (int8_t)(Utilities::RandomFloatRange(-1.0f, 1.0f) * 127.0f);
-
-        noiseImg.Bytes[i * 4 + 0] = (char)x;
-        noiseImg.Bytes[i * 4 + 1] = (char)y;
-        noiseImg.Bytes[i * 4 + 2] = 0;
-        noiseImg.Bytes[i * 4 + 3] = 0;
-    }
-
-    m_noiseTexture = device->CreateTexture(NoiseDim, NoiseDim, TextureFormat::RGBA8SNorm, TextureType::ShaderResource);
-    device->CreateShaderResourceView(m_noiseTexture);
-    device->UploadTextureData(noiseImg, m_noiseTexture);
-    device->FlushUploads();
 }
 
 void SSAORenderPass::OnResize(std::shared_ptr<D3D12Driver> device, int width, int height)
@@ -82,7 +25,7 @@ void SSAORenderPass::OnResize(std::shared_ptr<D3D12Driver> device, int width, in
     m_width = width;
     m_height = height;
     
-    m_SSAOTexture = device->CreateTexture(width, height, TextureFormat::R16Norm, TextureType::Storage);
+    m_SSAOTexture = device->CreateTexture(width, height, TextureFormat::R16Norm, TextureType::Storage, "SSAOTexture");
     device->CreateUnorderedAccessView(m_SSAOTexture);
     device->CreateShaderResourceView(m_SSAOTexture);
 }
