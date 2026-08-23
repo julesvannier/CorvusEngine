@@ -52,10 +52,15 @@ void Main(uint3 ThreadID : SV_DispatchThreadID)
     Normal.GetDimensions(normalWidth, normalHeight);
 
     float2 st2 = ThreadID.xy / float2(normalWidth, normalHeight);
-    float3 normal = (Normal.SampleLevel(Sampler, st2, 0).xyz * 2.0) - 1.0;
-    normal = normalize(normal);
+    float3 normal = normalize(Normal.SampleLevel(Sampler, st2, 0).xyz);
 
     float sceneDepth = Depth.SampleLevel(Sampler, st, 0).r;
+    if (sceneDepth >= 1.0f)
+    {
+        OutSSAOTexture[ThreadID.xy] = 1.0f;
+        return;
+    }
+    
     float4 clipSpacePosition = float4(st * 2.0 - 1.0, sceneDepth, 1.0);
     clipSpacePosition.y *= -1.0;
     float4 worldSpacePosition = mul(clipSpacePosition, InvViewProj); // NDC to World
@@ -69,7 +74,7 @@ void Main(uint3 ThreadID : SV_DispatchThreadID)
     
     float3x3 tbn = float3x3(tangent, bitangent, normal);
     
-    float radius = 0.3f;
+    float radius = 0.35f;
     float occlusion = 0.0f;
     for (int i = 0; i < 16; i++)
     {   
@@ -91,8 +96,9 @@ void Main(uint3 ThreadID : SV_DispatchThreadID)
         sampledWorldPosition /= sampledWorldPosition.w;
         float sampledViewZ = mul(sampledWorldPosition, View).z;
         
+        float bias = 0.025f;
         float rangeCheck = abs(viewSpacePosition.z - sampledViewZ) < radius ? 1.0 : 0.0;
-        occlusion += (posView.z > sampledViewZ ? 1.0 : 0.0) * rangeCheck;
+        occlusion += (posView.z > sampledViewZ + bias ? 1.0 : 0.0) * rangeCheck;
     }
     
     occlusion = 1.0 - (occlusion / 16.0);
