@@ -23,7 +23,7 @@ void WaterRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width,
 
     m_waterTesselationPipeline = device->CreateGraphicsPipeline(specs);
     
-    m_sceneConstantBuffer = device->CreateBuffer(256, 0, BufferType::Constant, false);
+    m_sceneConstantBuffer = device->CreateBuffer(512, 0, BufferType::Constant, false);
     device->CreateConstantBuffer(m_sceneConstantBuffer);
 
     m_waterConstantBuffer = device->CreateBuffer(256, 0, BufferType::Constant, false);
@@ -74,8 +74,6 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPass
     auto proj = camera.GetProjMatrix();
     auto invViewProj = camera.GetInvViewProjMatrix();
 
-    DirectX::XMMATRIX viewProj = view * proj;
-    
     SceneConstantBuffer cbuf;
     cbuf.Time = globalPassData.ElapsedTime;
     cbuf.CameraPosition = camera.GetPosition();
@@ -84,7 +82,8 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPass
     cbuf.DirLightIntensity = globalPassData.DirectionalInfo.Intensity;
     cbuf.ScreenDimensions[0] = globalPassData.ViewportSizeX;
     cbuf.ScreenDimensions[1] = globalPassData.ViewportSizeY;
-    DirectX::XMStoreFloat4x4(&cbuf.ViewProj, viewProj);
+    DirectX::XMStoreFloat4x4(&cbuf.View, view);
+    DirectX::XMStoreFloat4x4(&cbuf.Proj, proj);
     DirectX::XMStoreFloat4x4(&cbuf.InvViewProj, invViewProj);
     cbuf.ShadowTransform = globalPassData.ShadowMap.ShadowTransform;
     cbuf.ShadowEnabled = globalPassData.EnableShadows;
@@ -99,8 +98,6 @@ void WaterRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPass
 
     WaterConstantBuffer waterCb;
     waterCb = globalPassData.WaterParams;
-    DirectX::XMStoreFloat4x4(&waterCb.View, view);
-    DirectX::XMStoreFloat4x4(&waterCb.Proj, proj);
 
     void* data2;
     m_waterConstantBuffer->Map(0, 0, &data2);

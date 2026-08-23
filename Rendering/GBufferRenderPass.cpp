@@ -21,7 +21,7 @@ void GBufferRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int widt
 
     m_deferredGeometryPipeline = device->CreateGraphicsPipeline(geomSpecs);
 
-    m_sceneConstantBuffer = device->CreateBuffer(256, 0, BufferType::Constant, false);
+    m_sceneConstantBuffer = device->CreateBuffer(512, 0, BufferType::Constant, false);
     device->CreateConstantBuffer(m_sceneConstantBuffer);
 
     OnResize(device, width, height);
@@ -59,8 +59,6 @@ void GBufferRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPa
     auto proj = camera.GetProjMatrix();
     auto invViewProj = camera.GetInvViewProjMatrix();
 
-    DirectX::XMMATRIX viewProj = view * proj;
-    
     SceneConstantBuffer cbuf;
     cbuf.Time = globalPassData.ElapsedTime;
     cbuf.CameraPosition = camera.GetPosition();
@@ -69,7 +67,8 @@ void GBufferRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPa
     cbuf.DirLightIntensity = globalPassData.DirectionalInfo.Intensity;
     cbuf.ScreenDimensions[0] = globalPassData.ViewportSizeX;
     cbuf.ScreenDimensions[1] = globalPassData.ViewportSizeY;
-    DirectX::XMStoreFloat4x4(&cbuf.ViewProj, viewProj);
+    DirectX::XMStoreFloat4x4(&cbuf.View, view);
+    DirectX::XMStoreFloat4x4(&cbuf.Proj, proj);
     DirectX::XMStoreFloat4x4(&cbuf.InvViewProj, invViewProj);
     cbuf.ShadowTransform = globalPassData.ShadowMap.ShadowTransform;
     cbuf.ShadowEnabled = globalPassData.EnableShadows;

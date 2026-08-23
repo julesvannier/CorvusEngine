@@ -2,7 +2,8 @@
 
 cbuffer CBuf : register(b0)
 {
-    row_major float4x4 ViewProj;
+    row_major float4x4 View;
+    row_major float4x4 Proj;
     float Time;
     float3 CameraPosition;
     int Mode;
@@ -32,8 +33,6 @@ cbuffer WaterCBuf : register(b2)
     float SpecularNoiseTilingFactor;
     float Padding3;
     float4 SSRSettings;
-    row_major float4x4 View;
-    row_major float4x4 Proj;
 }
 
 SamplerState Sampler : register(s3);

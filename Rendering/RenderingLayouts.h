@@ -45,13 +45,13 @@ struct WaterConstantBuffer
     float Padding;
     // 16 bytes boundary
     DirectX::XMFLOAT4 SSRSettings = { 40.0f /* forward steps max */, 20.0f /* backward steps max */, 0.2f /* forward step length */, 60.0f /* depth fade */ };
-    DirectX::XMFLOAT4X4 View; // TODO pass view & proj separately inside SceneConstantBuffer
-    DirectX::XMFLOAT4X4 Proj; // TODO pass view & proj separately inside SceneConstantBuffer
 };
 
 struct SceneConstantBuffer
 {
-    DirectX::XMFLOAT4X4 ViewProj;
+    DirectX::XMFLOAT4X4 View;
+    // 16 bytes boundary
+    DirectX::XMFLOAT4X4 Proj;
     // 16 bytes boundary
     float Time;
     DirectX::XMFLOAT3 CameraPosition;

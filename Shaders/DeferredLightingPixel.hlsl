@@ -8,7 +8,8 @@ struct VertexOut
 
 cbuffer CBuf : register(b0)
 {
-    row_major float4x4 ViewProj;
+    row_major float4x4 View;
+    row_major float4x4 Proj;
     float Time;
     float3 CameraPosition;
     int Mode;

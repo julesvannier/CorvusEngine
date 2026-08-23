@@ -1,6 +1,7 @@
 cbuffer CBuf : register(b0)
 {
-    row_major float4x4 ViewProj;
+    row_major float4x4 View;
+    row_major float4x4 Proj;
     float Time;
     float3 CameraPosition;
     int Mode;
@@ -50,7 +51,7 @@ VertexOut Main(VertexIn Input, uint InstanceID : SV_InstanceID)
     VertexOut Output;
     InstanceData instanceData = InstancesData[InstanceID];
     Output.PositionWS = mul(float4(Input.position, 1.0), instanceData.WorldMat).xyz;
-    Output.Position = mul(float4(Output.PositionWS, 1.0), ViewProj);
+    Output.Position = mul(mul(float4(Output.PositionWS, 1.0), View), Proj);
     Output.normal = normalize(mul(Input.normal, (float3x3)instanceData.WorldMat));
     Output.uv = Input.texcoord;
     

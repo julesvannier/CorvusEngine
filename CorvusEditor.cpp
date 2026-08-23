@@ -698,7 +698,7 @@ void CorvusEditor::RenderUI(float width, float height)
         if(m_enableSSAO)
         {
             ImGui::Begin("Debug SSAO");
-            ImGui::Image((ImTextureID)m_SSAORenderPass->GetSSAOTexture()->m_srvUav.GPU.ptr, ImVec2(540, 320));
+            ImGui::Image((ImTextureID)m_SSAORenderPass->GetSSAOTexture()->m_srvUav.GPU.ptr, ImVec2(1024, 512));
             ImGui::End();
         }
 
