@@ -68,7 +68,8 @@ struct SceneConstantBuffer
     DirectX::XMFLOAT4X4 ShadowTransform;
     // 16 bytes boundary
     int ShadowEnabled;
-    float Paddin2[3];
+    int AOEnabled;
+    float Paddin2[2];
 };
 
 struct ScreenQuadVertex

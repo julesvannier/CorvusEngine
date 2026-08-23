@@ -274,6 +274,7 @@ void CorvusEditor::Run()
         passData.EnviroMaps = m_skyboxPass->GetEnvironmentMaps();
         passData.EnableShadows = m_enableShadows;
         passData.WaterParams = m_waterSettings;
+        passData.EnableSSAO = m_enableSSAO;
 
         // ------------------------------------------------------------- Render Passes --------------------------------------------------------------------
 
@@ -299,8 +300,11 @@ void CorvusEditor::Run()
         m_GBufferRenderPass->Pass(m_device, passData, m_camera, RMDs, rtInfo);
         passData.GBuffer = m_GBufferRenderPass->GetGBuffer();
 
-        if(m_enableSSAO)
+        if (m_enableSSAO)
+        {
             m_SSAORenderPass->Pass(m_device, passData, m_camera, RMDs, rtInfo);
+            passData.AO = m_SSAORenderPass->GetSSAOTexture();
+        }
         
         m_deferredLightingPass->Pass(m_device, passData, m_camera, RMDs, rtInfo);
 
@@ -754,7 +758,7 @@ void CorvusEditor::RenderUI(float width, float height)
             m_device->CreateShaderResourceView(m_sceneRenderTexture);
 
             m_GBufferRenderPass->OnResize(m_device, m_viewportCachedSize.x, m_viewportCachedSize.y);
-            m_SSAORenderPass->OnResize(m_device, m_viewportCachedSize.x / 2, m_viewportCachedSize.y / 2);
+            m_SSAORenderPass->OnResize(m_device, m_viewportCachedSize.x, m_viewportCachedSize.y);
             m_deferredLightingPass->OnResize(m_device, m_viewportCachedSize.x, m_viewportCachedSize.y);
             m_skyboxPass->OnResize(m_device, m_viewportCachedSize.x, m_viewportCachedSize.y);
             m_transparencyPass->OnResize(m_device, m_viewportCachedSize.x, m_viewportCachedSize.y);

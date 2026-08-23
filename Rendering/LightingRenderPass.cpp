@@ -63,6 +63,7 @@ void LightingRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalP
     DirectX::XMStoreFloat4x4(&cbuf.InvViewProj, invViewProj);
     cbuf.ShadowTransform = globalPassData.ShadowMap.ShadowTransform;
     cbuf.ShadowEnabled = globalPassData.EnableShadows;
+    cbuf.AOEnabled = globalPassData.EnableSSAO;
 
     auto GBuffer = globalPassData.GBuffer;
         
@@ -97,6 +98,8 @@ void LightingRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalP
         commandList->BindGraphicsShaderResource(globalPassData.ShadowMap.DepthBuffer, 8);
         commandList->BindGraphicsSampler(m_comparisonSampler, 9);
     }
+    if (globalPassData.EnableSSAO)
+        commandList->BindGraphicsShaderResource(globalPassData.AO, 10);
     // commandList->BindGraphicsShaderResource(globalPassData.BRDFLut, 8);
     commandList->Draw(6);
 

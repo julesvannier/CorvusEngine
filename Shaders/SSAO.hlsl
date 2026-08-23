@@ -15,7 +15,8 @@ cbuffer CBuf : register(b3)
     row_major float4x4 InvViewProj;
     row_major float4x4 ShadowTransform;
     bool ShadowEnabled;
-    float3 Padding2;
+    bool AOEnabled;
+    float2 Padding2;
 };
 
 Texture2D Normal : register(t4);
@@ -43,25 +44,27 @@ void Main(uint3 ThreadID : SV_DispatchThreadID)
         normalize(float3(-0.88, -0.09, 0.66)),
     };
 
-    float depthWidth, depthHeight;
-    Depth.GetDimensions(depthWidth, depthHeight);
-
-    float2 st = ThreadID.xy / float2(depthWidth, depthHeight);
-
     float normalWidth, normalHeight;
     Normal.GetDimensions(normalWidth, normalHeight);
+    if (ThreadID.x >= normalWidth || ThreadID.y >= normalHeight)
+        return;
+    
+    float3 normal = normalize(Normal.Load(int3(ThreadID.x, ThreadID.y, 0)).xyz);
 
-    float2 st2 = ThreadID.xy / float2(normalWidth, normalHeight);
-    float3 normal = normalize(Normal.SampleLevel(Sampler, st2, 0).xyz);
-
-    float sceneDepth = Depth.SampleLevel(Sampler, st, 0).r;
+    float depthWidth, depthHeight;
+    Depth.GetDimensions(depthWidth, depthHeight);
+    if (ThreadID.x >= depthWidth || ThreadID.y >= depthHeight)
+        return;
+    
+    float sceneDepth = Depth.Load(int3(ThreadID.x, ThreadID.y, 0)).r;
     if (sceneDepth >= 1.0f)
     {
         OutSSAOTexture[ThreadID.xy] = 1.0f;
         return;
     }
     
-    float4 clipSpacePosition = float4(st * 2.0 - 1.0, sceneDepth, 1.0);
+    float2 uv = float2((float)ThreadID.x / depthWidth, (float)ThreadID.y / depthHeight);
+    float4 clipSpacePosition = float4(uv * 2.0 - 1.0, sceneDepth, 1.0);
     clipSpacePosition.y *= -1.0;
     float4 worldSpacePosition = mul(clipSpacePosition, InvViewProj); // NDC to World
     worldSpacePosition /= worldSpacePosition.w;
@@ -88,7 +91,7 @@ void Main(uint3 ThreadID : SV_DispatchThreadID)
         offset.y *= -1.0;
         offset.xy = offset.xy * 0.5 + 0.5;
 
-        float sampledDepth = Depth.SampleLevel(Sampler, offset.xy, 0).r;
+        float sampledDepth = Depth.Load(int3(offset.x * depthWidth, offset.y * depthHeight, 0)).r;
 
         float4 sampledClipPosition = float4(offset.xy * 2.0 - 1.0, sampledDepth, 1.0);
         sampledClipPosition.y *= -1.0;
@@ -96,12 +99,14 @@ void Main(uint3 ThreadID : SV_DispatchThreadID)
         sampledWorldPosition /= sampledWorldPosition.w;
         float sampledViewZ = mul(sampledWorldPosition, View).z;
         
-        float bias = 0.025f;
         float rangeCheck = abs(viewSpacePosition.z - sampledViewZ) < radius ? 1.0 : 0.0;
-        occlusion += (posView.z > sampledViewZ + bias ? 1.0 : 0.0) * rangeCheck;
+        occlusion += (posView.z > sampledViewZ ? 1.0 : 0.0) * rangeCheck;
     }
     
     occlusion = 1.0 - (occlusion / 16.0);
     
     OutSSAOTexture[ThreadID.xy] = occlusion;
+    if(Mode < 0)
+        OutSSAOTexture[ThreadID.xy] = Depth.Sample(Sampler, float2(0.0, 0.0)).r;
+
 }

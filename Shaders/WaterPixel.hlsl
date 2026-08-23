@@ -13,7 +13,8 @@ cbuffer CBuf : register(b0)
     row_major float4x4 InvViewProj;
     row_major float4x4 ShadowTransform;
     bool ShadowEnabled;
-    float3 Padding2;
+    bool AOEnabled;
+    float2 Padding2;
 };
 
 cbuffer WaterCBuf : register(b2)

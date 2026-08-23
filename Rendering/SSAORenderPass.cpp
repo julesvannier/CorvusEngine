@@ -47,6 +47,7 @@ void SSAORenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPassD
     DirectX::XMStoreFloat4x4(&cbuf.InvViewProj, invViewProj);
     cbuf.ShadowTransform = globalPassData.ShadowMap.ShadowTransform;
     cbuf.ShadowEnabled = globalPassData.EnableShadows;
+    cbuf.AOEnabled = globalPassData.EnableSSAO;
 
     void* data;
     m_sceneConstantBuffer->Map(0, 0, &data);
@@ -66,7 +67,7 @@ void SSAORenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPassD
     commandList->BindComputeConstantBuffer(m_sceneConstantBuffer, 3);
     commandList->BindComputeShaderResource(globalPassData.GBuffer.NormalRenderTarget, 4);
     
-    commandList->Dispatch(m_width / 32, m_height / 32, 1);
+    commandList->Dispatch((m_width + 31) / 32, (m_height + 31) / 32, 1);
     
     commandList->ImageBarrier(m_SSAOTexture, D3D12_RESOURCE_STATE_GENERIC_READ);
 }

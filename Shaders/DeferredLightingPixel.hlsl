@@ -19,7 +19,8 @@ cbuffer CBuf : register(b0)
     row_major float4x4 InvViewProj;
     row_major float4x4 ShadowTransform;
     bool ShadowEnabled;
-    float3 Padding2;
+    bool AOEnabled;
+    float2 Padding2;
 };
 
 SamplerState Sampler : register(s1);
@@ -32,6 +33,7 @@ TextureCube PrefilterEnvMap : register(t7);
 // Texture2D BRDFLut : register(t8);
 Texture2D ShadowMap : register(t8);
 SamplerComparisonState CmpSampler : register(s9);
+Texture2D AO : register(t10);
 
 float CalcShadowFactor(float4 shadowPos, float3 normal, float3 lightDir)
 {
@@ -99,6 +101,10 @@ float4 Main(VertexOut Input) : SV_TARGET
         shadowFactor = CalcShadowFactor(shadowPos, normal, dirLightVec);
     }
     
+    float ambiantOcclusion = 1.0f;
+    if (AOEnabled)
+        ambiantOcclusion = AO.Sample(Sampler, Input.Texcoord.xy).r;
+    
     float3 finalLight = PBR(F0, normal, view, dirLightVec, normalize(dirLightVec + view), lightColor.xyz, albedo.xyz, roughness, metallic);
 
     float3 Ks = FresnelSchlickRoughness(max(dot(normal, view), 0.0f), F0,  roughness);
@@ -120,7 +126,7 @@ float4 Main(VertexOut Input) : SV_TARGET
 
     float3 ambiantLight = Kd * diffuse + specular;
 
-    float3 outLight = (ambiantLight * DirLightIntensity) + finalLight * shadowFactor;
+    float3 outLight = (ambiantLight * DirLightIntensity) + finalLight * shadowFactor * ambiantOcclusion;
 
     switch (Mode)
     {

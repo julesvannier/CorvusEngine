@@ -45,6 +45,8 @@ struct GlobalPassData
     GBuffer GBuffer;
     WaterConstantBuffer WaterParams;
     EnvironmentMaps EnviroMaps;
+    bool EnableSSAO;
+    std::shared_ptr<Texture> AO;
 };
 
 struct RenderMeshData

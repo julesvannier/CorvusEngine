@@ -64,6 +64,7 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const Glo
     DirectX::XMStoreFloat4x4(&cbuf.InvViewProj, invViewProj);
     cbuf.ShadowTransform = globalPassData.ShadowMap.ShadowTransform;
     cbuf.ShadowEnabled = globalPassData.EnableShadows;
+    cbuf.AOEnabled = globalPassData.EnableSSAO;
         
     void* data;
     m_sceneConstantBuffer->Map(0, 0, &data);
@@ -89,7 +90,7 @@ void TransparencyRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const Glo
     m_opacityValuesBuffer->Map(0, 0, &opacityDt);
     if (opacityDt)
     {
-        memcpy(opacityDt, opacityData.data(), sizeof(InstanceData) * renderMeshesData.size());
+        memcpy(opacityDt, opacityData.data(), sizeof(float) * opacityData.size());
         m_opacityValuesBuffer->Unmap(0, 0);
     }
     
