@@ -46,6 +46,7 @@ struct GlobalPassData
     WaterConstantBuffer WaterParams;
     EnvironmentMaps EnviroMaps;
     bool EnableSSAO;
+    SSAOConstantBuffer SSAOParams;
     std::shared_ptr<Texture> AO;
 };
 

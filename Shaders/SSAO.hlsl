@@ -21,6 +21,12 @@ cbuffer CBuf : register(b3)
 
 Texture2D Normal : register(t4);
 
+cbuffer CBufSSAO : register(b5)
+{
+    float Radius;
+    float3 SSAOPadding;
+};
+
 [numthreads(32, 32, 1)]
 void Main(uint3 ThreadID : SV_DispatchThreadID)
 {
@@ -77,7 +83,7 @@ void Main(uint3 ThreadID : SV_DispatchThreadID)
     
     float3x3 tbn = float3x3(tangent, bitangent, normal);
     
-    float radius = 0.35f;
+    float radius = Radius;
     float occlusion = 0.0f;
     for (int i = 0; i < 16; i++)
     {   

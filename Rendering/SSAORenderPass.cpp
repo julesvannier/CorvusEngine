@@ -13,6 +13,9 @@ void SSAORenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width, 
     m_sceneConstantBuffer = device->CreateBuffer(512, 0, BufferType::Constant, false);
     device->CreateConstantBuffer(m_sceneConstantBuffer);
 
+    m_ssaoParamsBuffer = device->CreateBuffer(256, 0, BufferType::Constant, false);
+    device->CreateConstantBuffer(m_ssaoParamsBuffer);
+
     OnResize(device, width, height);
 }
 
@@ -57,6 +60,16 @@ void SSAORenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPassD
         m_sceneConstantBuffer->Unmap(0, 0);
     }
 
+    SSAOConstantBuffer ssaoCbuf = globalPassData.SSAOParams;
+
+    void* ssaoData;
+    m_ssaoParamsBuffer->Map(0, 0, &ssaoData);
+    if (ssaoData)
+    {
+        memcpy(ssaoData, &ssaoCbuf, sizeof(SSAOConstantBuffer));
+        m_ssaoParamsBuffer->Unmap(0, 0);
+    }
+
     auto commandList = device->GetCurrentCommandList();
 
     commandList->BindComputePipeline(m_SSAOPipeline);
@@ -66,7 +79,8 @@ void SSAORenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPassD
     commandList->BindComputeSampler(m_sampler, 2);
     commandList->BindComputeConstantBuffer(m_sceneConstantBuffer, 3);
     commandList->BindComputeShaderResource(globalPassData.GBuffer.NormalRenderTarget, 4);
-    
+    commandList->BindComputeConstantBuffer(m_ssaoParamsBuffer, 5);
+
     commandList->Dispatch((m_width + 31) / 32, (m_height + 31) / 32, 1);
     
     commandList->ImageBarrier(m_SSAOTexture, D3D12_RESOURCE_STATE_GENERIC_READ);

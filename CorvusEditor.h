@@ -93,6 +93,7 @@ private:
     float m_defaultLightQuadraticAttenuation = 0.02f;
 
     WaterConstantBuffer m_waterSettings;
+    SSAOConstantBuffer m_ssaoSettings;
 
     int m_shadowMapResolution = 2048;
     bool m_enableShadows = true;

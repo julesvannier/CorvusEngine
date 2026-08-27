@@ -275,6 +275,7 @@ void CorvusEditor::Run()
         passData.EnableShadows = m_enableShadows;
         passData.WaterParams = m_waterSettings;
         passData.EnableSSAO = m_enableSSAO;
+        passData.SSAOParams = m_ssaoSettings;
 
         // ------------------------------------------------------------- Render Passes --------------------------------------------------------------------
 
@@ -702,6 +703,7 @@ void CorvusEditor::RenderUI(float width, float height)
         if(m_enableSSAO)
         {
             ImGui::Begin("Debug SSAO");
+            ImGui::SliderFloat("Radius", &m_ssaoSettings.Radius, 0.01f, 2.0f);
             ImGui::Image((ImTextureID)m_SSAORenderPass->GetSSAOTexture()->m_srvUav.GPU.ptr, ImVec2(1024, 512));
             ImGui::End();
         }
