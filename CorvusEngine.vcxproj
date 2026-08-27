@@ -537,28 +537,72 @@
     <Content Include="External\stb\LICENSE" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\BRDFComputeShader.hlsl" />
-    <FxCompile Include="Shaders\DeferredGBufferPixel.hlsl" />
-    <FxCompile Include="Shaders\DeferredLightingPixel.hlsl" />
-    <FxCompile Include="Shaders\DeferredPointLightPixel.hlsl" />
-    <FxCompile Include="Shaders\DeferredPointLightVertex.hlsl" />
-    <FxCompile Include="Shaders\IrradianceComputeShader.hlsl" />
-    <FxCompile Include="Shaders\PBR.hlsl" />
-    <FxCompile Include="Shaders\PrefilterEnvMapComputeShader.hlsl" />
-    <FxCompile Include="Shaders\ScreenQuadVertex.hlsl" />
-    <FxCompile Include="Shaders\ShadowMapPixel.hlsl" />
-    <FxCompile Include="Shaders\ShadowMapVertex.hlsl" />
-    <FxCompile Include="Shaders\SimplePixel.hlsl" />
-    <FxCompile Include="Shaders\SimpleVertex.hlsl" />
-    <FxCompile Include="Shaders\SkyBoxPixel.hlsl" />
-    <FxCompile Include="Shaders\SkyBoxVertex.hlsl" />
-    <FxCompile Include="Shaders\SSAO.hlsl" />
-    <FxCompile Include="Shaders\Tonemapping.hlsl" />
-    <FxCompile Include="Shaders\TransparentPixel.hlsl" />
-    <FxCompile Include="Shaders\WaterDomainShader.hlsl" />
-    <FxCompile Include="Shaders\WaterHullShader.hlsl" />
-    <FxCompile Include="Shaders\WaterPixel.hlsl" />
-    <FxCompile Include="Shaders\WaterVertex.hlsl" />
+    <None Include="Shaders\BRDFComputeShader.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\DeferredGBufferPixel.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\DeferredLightingPixel.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\DeferredPointLightPixel.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\DeferredPointLightVertex.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\IrradianceComputeShader.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\PBR.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\PrefilterEnvMapComputeShader.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\ScreenQuadVertex.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\ShadowMapPixel.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\ShadowMapVertex.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\SimplePixel.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\SimpleVertex.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\SkyBoxPixel.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\SkyBoxVertex.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\SSAO.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\Tonemapping.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\TransparentPixel.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\WaterDomainShader.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\WaterHullShader.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\WaterPixel.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\WaterVertex.hlsl">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

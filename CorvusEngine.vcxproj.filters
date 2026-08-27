@@ -603,4 +603,28 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\BRDFComputeShader.hlsl" />
+    <None Include="Shaders\DeferredGBufferPixel.hlsl" />
+    <None Include="Shaders\DeferredLightingPixel.hlsl" />
+    <None Include="Shaders\DeferredPointLightPixel.hlsl" />
+    <None Include="Shaders\DeferredPointLightVertex.hlsl" />
+    <None Include="Shaders\IrradianceComputeShader.hlsl" />
+    <None Include="Shaders\PBR.hlsl" />
+    <None Include="Shaders\PrefilterEnvMapComputeShader.hlsl" />
+    <None Include="Shaders\ScreenQuadVertex.hlsl" />
+    <None Include="Shaders\ShadowMapPixel.hlsl" />
+    <None Include="Shaders\ShadowMapVertex.hlsl" />
+    <None Include="Shaders\SimplePixel.hlsl" />
+    <None Include="Shaders\SimpleVertex.hlsl" />
+    <None Include="Shaders\SkyBoxPixel.hlsl" />
+    <None Include="Shaders\SkyBoxVertex.hlsl" />
+    <None Include="Shaders\SSAO.hlsl" />
+    <None Include="Shaders\Tonemapping.hlsl" />
+    <None Include="Shaders\TransparentPixel.hlsl" />
+    <None Include="Shaders\WaterDomainShader.hlsl" />
+    <None Include="Shaders\WaterHullShader.hlsl" />
+    <None Include="Shaders\WaterPixel.hlsl" />
+    <None Include="Shaders\WaterVertex.hlsl" />
+  </ItemGroup>
 </Project>
