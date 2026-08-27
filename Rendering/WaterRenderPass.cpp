@@ -7,7 +7,7 @@ void WaterRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width,
     
     GraphicsPipelineSpecs specs;
     specs.FormatCount = 1;
-    specs.Formats[0] = TextureFormat::RGBA8;
+    specs.Formats[0] = TextureFormat::RGBA16Float;
     specs.BlendOperation = BlendOperation::Transparency;
     specs.DepthEnabled = true;
     specs.Depth = DepthOperation::Less;

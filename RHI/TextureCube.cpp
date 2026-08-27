@@ -2,6 +2,21 @@
 #include "CommandList.h"
 #include "DDSTextureLoader/DDSTextureLoader.h"
 
+static DXGI_FORMAT ToSRGB(DXGI_FORMAT format)
+{
+    switch(format)
+    {
+        case DXGI_FORMAT_R8G8B8A8_UNORM:   return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+        case DXGI_FORMAT_B8G8R8A8_UNORM:   return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+        case DXGI_FORMAT_B8G8R8X8_UNORM:   return DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
+        case DXGI_FORMAT_BC1_UNORM:        return DXGI_FORMAT_BC1_UNORM_SRGB;
+        case DXGI_FORMAT_BC2_UNORM:        return DXGI_FORMAT_BC2_UNORM_SRGB;
+        case DXGI_FORMAT_BC3_UNORM:        return DXGI_FORMAT_BC3_UNORM_SRGB;
+        case DXGI_FORMAT_BC7_UNORM:        return DXGI_FORMAT_BC7_UNORM_SRGB;
+        default:                           return format;
+    }
+}
+
 TextureCube::TextureCube(std::shared_ptr<Device> device, std::shared_ptr<CommandList> cmdList, const std::wstring& filePath, Heaps& heaps)
 {
     HRESULT hr = DirectX::CreateDDSTextureFromFile12(device->GetDevice(), cmdList->GetCommandList(), filePath.c_str(),m_resourceComPtr, uploadHeap);
@@ -24,7 +39,7 @@ TextureCube::TextureCube(std::shared_ptr<Device> device, std::shared_ptr<Command
     srvDesc.TextureCube.MostDetailedMip = 0;
     srvDesc.TextureCube.MipLevels = m_resourceComPtr->GetDesc().MipLevels;
     srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
-    srvDesc.Format = m_resourceComPtr->GetDesc().Format;
+    srvDesc.Format = ToSRGB(m_resourceComPtr->GetDesc().Format);
     device->GetDevice()->CreateShaderResourceView(m_resourceComPtr.Get(), &srvDesc, m_srv.CPU);
 
     m_resource.Resource = m_resourceComPtr.Get();

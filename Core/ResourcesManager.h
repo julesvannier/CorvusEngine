@@ -11,7 +11,7 @@ public:
     ResourcesManager(std::shared_ptr<D3D12Driver> device);
     ~ResourcesManager();
 
-    std::shared_ptr<Texture> LoadTexture(const std::string& texPath, Image& img);
+    std::shared_ptr<Texture> LoadTexture(const std::string& texPath, Image& img, TextureFormat format = TextureFormat::RGBA8);
     std::shared_ptr<RenderItem> LoadMesh(const std::string& meshPath);
 
 private:

@@ -342,6 +342,7 @@
     <ClCompile Include="Rendering\ShadowRenderPass.cpp" />
     <ClCompile Include="Rendering\SkyBoxRenderPass.cpp" />
     <ClCompile Include="Rendering\SSAORenderPass.cpp" />
+    <ClCompile Include="Rendering\TonemappingRenderPass.cpp" />
     <ClCompile Include="Rendering\TransparencyRenderPass.cpp" />
     <ClCompile Include="Rendering\WaterRenderPass.cpp" />
     <ClCompile Include="RHI\Allocator.cpp" />
@@ -373,6 +374,7 @@
     <AdditionalFiles Include="Shaders\ShadowMapVertex.hlsl" />
     <AdditionalFiles Include="Shaders\ShadowMapPixel.hlsl" />
     <AdditionalFiles Include="Shaders\SSAO.hlsl" />
+    <AdditionalFiles Include="Shaders\Tonemapping.hlsl" />
     <AdditionalFiles Include="Shaders\TransparentPixel.hlsl" />
     <AdditionalFiles Include="Shaders\WaterDomainShader.hlsl" />
     <AdditionalFiles Include="Shaders\WaterHullShader.hlsl" />
@@ -509,6 +511,7 @@
     <ClInclude Include="Rendering\ShadowRenderPass.h" />
     <ClInclude Include="Rendering\SkyBoxRenderPass.h" />
     <ClInclude Include="Rendering\SSAORenderPass.h" />
+    <ClInclude Include="Rendering\TonemappingRenderPass.h" />
     <ClInclude Include="Rendering\TransparencyRenderPass.h" />
     <ClInclude Include="Rendering\WaterRenderPass.h" />
     <ClInclude Include="RHI\Allocator.h" />
@@ -532,6 +535,30 @@
     <Content Include="External\D3D12MA\LICENSE" />
     <Content Include="External\ImGui\LICENSE" />
     <Content Include="External\stb\LICENSE" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\BRDFComputeShader.hlsl" />
+    <FxCompile Include="Shaders\DeferredGBufferPixel.hlsl" />
+    <FxCompile Include="Shaders\DeferredLightingPixel.hlsl" />
+    <FxCompile Include="Shaders\DeferredPointLightPixel.hlsl" />
+    <FxCompile Include="Shaders\DeferredPointLightVertex.hlsl" />
+    <FxCompile Include="Shaders\IrradianceComputeShader.hlsl" />
+    <FxCompile Include="Shaders\PBR.hlsl" />
+    <FxCompile Include="Shaders\PrefilterEnvMapComputeShader.hlsl" />
+    <FxCompile Include="Shaders\ScreenQuadVertex.hlsl" />
+    <FxCompile Include="Shaders\ShadowMapPixel.hlsl" />
+    <FxCompile Include="Shaders\ShadowMapVertex.hlsl" />
+    <FxCompile Include="Shaders\SimplePixel.hlsl" />
+    <FxCompile Include="Shaders\SimpleVertex.hlsl" />
+    <FxCompile Include="Shaders\SkyBoxPixel.hlsl" />
+    <FxCompile Include="Shaders\SkyBoxVertex.hlsl" />
+    <FxCompile Include="Shaders\SSAO.hlsl" />
+    <FxCompile Include="Shaders\Tonemapping.hlsl" />
+    <FxCompile Include="Shaders\TransparentPixel.hlsl" />
+    <FxCompile Include="Shaders\WaterDomainShader.hlsl" />
+    <FxCompile Include="Shaders\WaterHullShader.hlsl" />
+    <FxCompile Include="Shaders\WaterPixel.hlsl" />
+    <FxCompile Include="Shaders\WaterVertex.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

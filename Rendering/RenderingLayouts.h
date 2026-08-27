@@ -108,3 +108,9 @@ struct SSAOConstantBuffer
     float Radius = 0.35f;
     float Padding[3];
 };
+
+struct TonemapConstantBuffer
+{
+    float Exposure = 1.0f;
+    float Padding[3];
+};

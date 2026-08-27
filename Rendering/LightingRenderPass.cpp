@@ -7,7 +7,7 @@ void LightingRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int wid
 
     GraphicsPipelineSpecs dirLightSpecs;
     dirLightSpecs.FormatCount = 1;
-    dirLightSpecs.Formats[0] = TextureFormat::RGBA8;
+    dirLightSpecs.Formats[0] = TextureFormat::RGBA16Float;
     dirLightSpecs.BlendOperation = BlendOperation::None;
     dirLightSpecs.DepthEnabled = false;
     dirLightSpecs.Cull = CullMode::Back;
@@ -19,7 +19,7 @@ void LightingRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int wid
 
     GraphicsPipelineSpecs pointLightSpecs;
     pointLightSpecs.FormatCount = 1;
-    pointLightSpecs.Formats[0] = TextureFormat::RGBA8;
+    pointLightSpecs.Formats[0] = TextureFormat::RGBA16Float;
     pointLightSpecs.BlendOperation = BlendOperation::Additive;
     pointLightSpecs.Cull = CullMode::Back;
     pointLightSpecs.Fill = FillMode::Solid;

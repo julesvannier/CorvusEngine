@@ -8,7 +8,7 @@ void SkyBoxRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width
     
     GraphicsPipelineSpecs skyboxSpecs;
     skyboxSpecs.FormatCount = 1;
-    skyboxSpecs.Formats[0] = TextureFormat::RGBA8;
+    skyboxSpecs.Formats[0] = TextureFormat::RGBA16Float;
     skyboxSpecs.BlendOperation = BlendOperation::None;
     skyboxSpecs.DepthEnabled = true;
     skyboxSpecs.Depth = DepthOperation::LEqual;

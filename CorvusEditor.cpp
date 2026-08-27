@@ -69,7 +69,10 @@ CorvusEditor::CorvusEditor()
     m_waterPass = std::make_shared<WaterRenderPass>();
     m_waterPass->Initialize(m_device, defaultWidth, defaultHeight);
 
-    m_sceneRenderTexture = m_device->CreateTexture(defaultWidth, defaultHeight, TextureFormat::RGBA8, TextureType::RenderTarget, "SceneRenderTexture");
+    m_tonemappingPass = std::make_shared<TonemappingRenderPass>();
+    m_tonemappingPass->Initialize(m_device, defaultWidth, defaultHeight);
+
+    m_sceneRenderTexture = m_device->CreateTexture(defaultWidth, defaultHeight, TextureFormat::RGBA16Float, TextureType::RenderTarget, "SceneRenderTexture");
     m_device->CreateRenderTargetView(m_sceneRenderTexture);
     m_device->CreateShaderResourceView(m_sceneRenderTexture);
 
@@ -327,6 +330,8 @@ void CorvusEditor::Run()
             m_waterPass->Pass(m_device, passData, m_camera, RMDs, rtInfo);
         }
 
+        m_tonemappingPass->Pass(m_device, passData, m_camera, RMDs, rtInfo);
+
         // ------------------------------------------------------------- UI Rendering --------------------------------------------------------------------
         
         commandList->BindRenderTargets({ backbuffer }, nullptr);
@@ -358,7 +363,7 @@ std::shared_ptr<GameObject> CorvusEditor::AddModelToScene(std::string name, cons
 
     if(!albedoPath.empty())
     {
-        auto albedoTexture = m_resourceManager->LoadTexture(albedoPath, albedoImg);
+        auto albedoTexture = m_resourceManager->LoadTexture(albedoPath, albedoImg, TextureFormat::RGBA8SRGB);
         model->GetMaterial().HasAlbedo = true;
         model->GetMaterial().Albedo = albedoTexture;
     }
@@ -541,6 +546,8 @@ void CorvusEditor::RenderUI(float width, float height)
         ImGui::Checkbox("Enable SSAO", &m_enableSSAO);
         ImGui::Checkbox("Translucancy pass", &m_renderTransparentObjects);
         ImGui::Checkbox("Water", &m_renderWater);
+        ImGui::Separator();
+        ImGui::SliderFloat("Exposure", &m_tonemappingPass->m_exposure, 0.1f, 5.0f);
         ImGui::End();
 
         ImGui::Begin("Log");
@@ -755,7 +762,7 @@ void CorvusEditor::RenderUI(float width, float height)
             m_viewportCachedSize = viewportSize;
 
             m_sceneRenderTexture.reset();
-            m_sceneRenderTexture = m_device->CreateTexture(m_viewportCachedSize.x, m_viewportCachedSize.y, TextureFormat::RGBA8, TextureType::RenderTarget, "SceneRenderTexture");
+            m_sceneRenderTexture = m_device->CreateTexture(m_viewportCachedSize.x, m_viewportCachedSize.y, TextureFormat::RGBA16Float, TextureType::RenderTarget, "SceneRenderTexture");
             m_device->CreateRenderTargetView(m_sceneRenderTexture);
             m_device->CreateShaderResourceView(m_sceneRenderTexture);
 
@@ -764,10 +771,11 @@ void CorvusEditor::RenderUI(float width, float height)
             m_deferredLightingPass->OnResize(m_device, m_viewportCachedSize.x, m_viewportCachedSize.y);
             m_skyboxPass->OnResize(m_device, m_viewportCachedSize.x, m_viewportCachedSize.y);
             m_transparencyPass->OnResize(m_device, m_viewportCachedSize.x, m_viewportCachedSize.y);
+            m_tonemappingPass->OnResize(m_device, m_viewportCachedSize.x, m_viewportCachedSize.y);
             UpdateProjMatrix(m_viewportCachedSize.x, m_viewportCachedSize.y);
         }
 
-        ImGui::Image((ImTextureID)m_sceneRenderTexture->m_srvUav.GPU.ptr, ImVec2(m_viewportCachedSize.x , m_viewportCachedSize.y));
+        ImGui::Image((ImTextureID)m_tonemappingPass->GetDisplayTexture()->m_srvUav.GPU.ptr, ImVec2(m_viewportCachedSize.x , m_viewportCachedSize.y));
 
         if(m_selectedGo != nullptr)
         {

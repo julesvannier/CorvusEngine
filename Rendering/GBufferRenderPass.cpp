@@ -116,7 +116,7 @@ void GBufferRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const GlobalPa
             continue;
 
         std::vector<InstanceData> instancesData;
-        for(auto instanceTransform : renderMeshData.InstancesTransforms)
+        for(const auto& instanceTransform : renderMeshData.InstancesTransforms)
         {
             InstanceData instanceData;
             instanceData.WorldMat = instanceTransform;

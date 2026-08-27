@@ -147,6 +147,9 @@
     <ClCompile Include="Rendering\SSAORenderPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Rendering\TonemappingRenderPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Rendering\TransparencyRenderPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -579,6 +582,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Rendering\SSAORenderPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\TonemappingRenderPass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Rendering\TransparencyRenderPass.h">

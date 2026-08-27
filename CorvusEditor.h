@@ -14,6 +14,7 @@
 #include "Rendering/ShadowRenderPass.h"
 #include "Rendering/SkyBoxRenderPass.h"
 #include "Rendering/SSAORenderPass.h"
+#include "Rendering/TonemappingRenderPass.h"
 #include "Rendering/TransparencyRenderPass.h"
 #include "Rendering/WaterRenderPass.h"
 
@@ -52,7 +53,7 @@ private:
     std::shared_ptr<Sampler> m_textureSampler;
 
     std::shared_ptr<Texture> m_sceneRenderTexture;
-    
+
     std::shared_ptr<ShadowRenderPass> m_shadowRenderPass;
     std::shared_ptr<GBufferRenderPass> m_GBufferRenderPass;
     std::shared_ptr<SSAORenderPass> m_SSAORenderPass;
@@ -60,6 +61,7 @@ private:
     std::shared_ptr<SkyBoxRenderPass> m_skyboxPass;
     std::shared_ptr<TransparencyRenderPass> m_transparencyPass;
     std::shared_ptr<WaterRenderPass> m_waterPass;
+    std::shared_ptr<TonemappingRenderPass> m_tonemappingPass;
 
     std::shared_ptr<ResourcesManager> m_resourceManager;
 
