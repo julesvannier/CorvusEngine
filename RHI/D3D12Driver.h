@@ -78,6 +78,10 @@ private:
         void* data;
         uint64_t size;
 
+        uint32_t rowPitchSrc = 0;
+        uint32_t rowPitchDst = 0;
+        uint32_t rowCount = 0;
+
         std::shared_ptr<Texture> sourceTexture;
         std::shared_ptr<Texture> destTexture;
 

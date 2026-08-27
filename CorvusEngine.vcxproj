@@ -374,6 +374,7 @@
     <AdditionalFiles Include="Shaders\ShadowMapVertex.hlsl" />
     <AdditionalFiles Include="Shaders\ShadowMapPixel.hlsl" />
     <AdditionalFiles Include="Shaders\SSAO.hlsl" />
+    <AdditionalFiles Include="Shaders\SSAOBlur.hlsl" />
     <AdditionalFiles Include="Shaders\Tonemapping.hlsl" />
     <AdditionalFiles Include="Shaders\TransparentPixel.hlsl" />
     <AdditionalFiles Include="Shaders\WaterDomainShader.hlsl" />
@@ -583,6 +584,9 @@
       <FileType>Document</FileType>
     </None>
     <None Include="Shaders\SSAO.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\SSAOBlur.hlsl">
       <FileType>Document</FileType>
     </None>
     <None Include="Shaders\Tonemapping.hlsl">

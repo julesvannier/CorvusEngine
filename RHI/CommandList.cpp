@@ -290,7 +290,7 @@ void CommandList::CopyBufferToTexture(std::shared_ptr<Texture> dst, std::shared_
     CopySource.PlacedFootprint.Footprint.Width = dst->m_width;
     CopySource.PlacedFootprint.Footprint.Height = dst->m_height;
     CopySource.PlacedFootprint.Footprint.Depth = 1;
-    CopySource.PlacedFootprint.Footprint.RowPitch = dst->m_width * 4;
+    CopySource.PlacedFootprint.Footprint.RowPitch = GetTextureRowPitch(dst->GetFormat(), dst->m_width);
     CopySource.SubresourceIndex = 0;
 
     D3D12_TEXTURE_COPY_LOCATION CopyDest = {};

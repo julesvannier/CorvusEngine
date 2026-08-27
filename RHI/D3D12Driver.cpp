@@ -309,14 +309,21 @@ void D3D12Driver::UploadBufferData(void* pData, uint64_t size, std::shared_ptr<B
 
 void D3D12Driver::UploadTextureData(Image& image, std::shared_ptr<Texture> destTexture)
 {
-    std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(m_allocator, image.Width * image.Height * 4, 0, BufferType::Copy, false);
+    uint32_t bpp = GetFormatBytesPerPixel(destTexture->GetFormat());
+    uint32_t srcRowPitch = image.Width * bpp;
+    uint32_t dstRowPitch = GetTextureRowPitch(destTexture->GetFormat(), image.Width);
+
+    std::shared_ptr<Buffer> buffer = std::make_shared<Buffer>(m_allocator, (uint64_t)dstRowPitch * image.Height, 0, BufferType::Copy, false);
 
     {
         UploadCommand command;
         command.type = UploadCommandType::HostToDeviceShared;
         command.data = image.Bytes;
-        command.size = image.Width * image.Height * 4;
+        command.size = (uint64_t)srcRowPitch * image.Height;
         command.destBuffer = buffer;
+        command.rowPitchSrc = srcRowPitch;
+        command.rowPitchDst = dstRowPitch;
+        command.rowCount = (uint32_t)image.Height;
 
         m_uploadCommands.push_back(command);
     }
@@ -363,7 +370,17 @@ void D3D12Driver::FlushUploads()
             case UploadCommandType::HostToDeviceShared: {
                 void *pData;
                 command.destBuffer->Map(0, 0, &pData);
-                memcpy(pData, command.data, command.size);
+                if (command.rowCount > 0 && command.rowPitchDst != command.rowPitchSrc)
+                {
+                    uint8_t* dst = reinterpret_cast<uint8_t*>(pData);
+                    const uint8_t* src = reinterpret_cast<const uint8_t*>(command.data);
+                    for (uint32_t row = 0; row < command.rowCount; row++)
+                        memcpy(dst + (uint64_t)row * command.rowPitchDst, src + (uint64_t)row * command.rowPitchSrc, command.rowPitchSrc);
+                }
+                else
+                {
+                    memcpy(pData, command.data, command.size);
+                }
                 command.destBuffer->Unmap(0, 0);
                 break;
             }

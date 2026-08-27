@@ -88,7 +88,7 @@ private:
     bool m_mouseLocked = true;
 
     float m_dirLightDirection[3] = { -0.85f, -1.0f, -0.7f };
-    float m_dirLightIntensity = 1.0;
+    float m_dirLightIntensity = 0.8f;
 
     float m_defaultLightConstAttenuation = 0.65f;
     float m_defaultLightLinearAttenuation = 0.1f;

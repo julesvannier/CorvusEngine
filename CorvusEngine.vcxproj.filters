@@ -620,6 +620,7 @@
     <None Include="Shaders\SkyBoxPixel.hlsl" />
     <None Include="Shaders\SkyBoxVertex.hlsl" />
     <None Include="Shaders\SSAO.hlsl" />
+    <None Include="Shaders\SSAOBlur.hlsl" />
     <None Include="Shaders\Tonemapping.hlsl" />
     <None Include="Shaders\TransparentPixel.hlsl" />
     <None Include="Shaders\WaterDomainShader.hlsl" />

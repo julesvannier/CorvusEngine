@@ -22,6 +22,7 @@ Features :
 * Directionnal / Point lights
 * Lights volumes
 * Shadow Maps
+* SSAO
 * Water Rendering
   * Tesselation
   * Screen Space Reflections
@@ -29,5 +30,4 @@ Features :
 
 RoadMap :
 * CSM
-* SSAO
 * AA (TAA or FXAA)

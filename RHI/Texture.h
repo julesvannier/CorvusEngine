@@ -29,7 +29,10 @@ enum class TextureFormat
     R8Norm = DXGI_FORMAT_R8_UNORM
 };
 
-class Texture 
+uint32_t GetFormatBytesPerPixel(TextureFormat format);
+uint32_t GetTextureRowPitch(TextureFormat format, uint32_t width);
+
+class Texture
 {
 public:
     Texture(std::shared_ptr<Device> device);

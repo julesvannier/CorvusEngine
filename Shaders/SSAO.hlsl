@@ -27,29 +27,16 @@ cbuffer CBufSSAO : register(b5)
     float3 SSAOPadding;
 };
 
+StructuredBuffer<float4> Kernel : register(t6);
+Texture2D NoiseTex : register(t7);
+SamplerState NoiseSampler : register(s8);
+
+static const int KernelSize = 16;
+static const float NoiseDim = 4.0;
+
 [numthreads(32, 32, 1)]
 void Main(uint3 ThreadID : SV_DispatchThreadID)
 {
-    float3 kernel[16] =
-    {
-        normalize(float3( 0.53,  0.12, 0.71)),
-        normalize(float3(-0.34,  0.78, 0.22)),
-        normalize(float3( 0.11, -0.62, 0.45)),
-        normalize(float3(-0.81, -0.27, 0.13)),
-        normalize(float3( 0.29,  0.94, 0.63)),
-        normalize(float3(-0.63,  0.41, 0.08)),
-        normalize(float3( 0.76, -0.18, 0.36)),
-        normalize(float3(-0.09, -0.87, 0.91)),
-        normalize(float3( 0.48,  0.55, 0.19)),
-        normalize(float3(-0.97,  0.03, 0.58)),
-        normalize(float3( 0.22,  0.31, 0.77)),
-        normalize(float3(-0.15, -0.44, 0.05)),
-        normalize(float3( 0.68, -0.72, 0.83)),
-        normalize(float3(-0.51,  0.66, 0.39)),
-        normalize(float3( 0.05,  0.99, 0.24)),
-        normalize(float3(-0.88, -0.09, 0.66)),
-    };
-
     float normalWidth, normalHeight;
     Normal.GetDimensions(normalWidth, normalHeight);
     if (ThreadID.x >= normalWidth || ThreadID.y >= normalHeight)
@@ -77,17 +64,19 @@ void Main(uint3 ThreadID : SV_DispatchThreadID)
     
     float3 viewSpacePosition = mul(float4(worldSpacePosition.xyz, 1.0), View).xyz;
     
-    float3 v = abs(normal.x) < 0.9 ? float3(1.0, 0.0, 0.0) : float3(0.0, 1.0, 0.0);
-    float3 tangent = normalize(cross(v, normal));
-    float3 bitangent = normalize(cross(tangent, normal));
-    
+    float2 noiseUV = float2(ThreadID.xy) / NoiseDim;
+    float3 randomVec = normalize(float3(NoiseTex.SampleLevel(NoiseSampler, noiseUV, 0).xy, 0.0));
+
+    float3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
+    float3 bitangent = cross(normal, tangent);
+
     float3x3 tbn = float3x3(tangent, bitangent, normal);
-    
+
     float radius = Radius;
     float occlusion = 0.0f;
-    for (int i = 0; i < 16; i++)
-    {   
-        float3 pos = mul(kernel[i], tbn); // pos from tangent to world space
+    for (int i = 0; i < KernelSize; i++)
+    {
+        float3 pos = mul(Kernel[i].xyz, tbn); // pos from tangent to world space
         pos = pos * radius + worldSpacePosition.xyz;
         
         float3 posView = mul(float4(pos, 1.0), View).xyz;
@@ -109,7 +98,7 @@ void Main(uint3 ThreadID : SV_DispatchThreadID)
         occlusion += (posView.z > sampledViewZ ? 1.0 : 0.0) * rangeCheck;
     }
     
-    occlusion = 1.0 - (occlusion / 16.0);
+    occlusion = 1.0 - (occlusion / (float)KernelSize);
     
     OutSSAOTexture[ThreadID.xy] = occlusion;
     if(Mode < 0)

@@ -1,5 +1,35 @@
 #include "Texture.h"
 
+uint32_t GetFormatBytesPerPixel(TextureFormat format)
+{
+    switch (format)
+    {
+        case TextureFormat::RGBA32Float:
+            return 16;
+        case TextureFormat::RGBA16Float:
+            return 8;
+        case TextureFormat::RGBA8:
+        case TextureFormat::RGBA8SRGB:
+        case TextureFormat::RGBA8SNorm:
+        case TextureFormat::R32Float:
+        case TextureFormat::R32Depth:
+        case TextureFormat::R11G11B10Float:
+        case TextureFormat::RG16Float:
+            return 4;
+        case TextureFormat::R16Norm:
+            return 2;
+        case TextureFormat::R8Norm:
+            return 1;
+    }
+    return 4;
+}
+
+uint32_t GetTextureRowPitch(TextureFormat format, uint32_t width)
+{
+    uint32_t unalignedPitch = width * GetFormatBytesPerPixel(format);
+    return (unalignedPitch + D3D12_TEXTURE_DATA_PITCH_ALIGNMENT - 1) & ~(D3D12_TEXTURE_DATA_PITCH_ALIGNMENT - 1);
+}
+
 D3D12_RESOURCE_FLAGS GetResourceFlag(TextureType usage)
 {
     switch (usage)
