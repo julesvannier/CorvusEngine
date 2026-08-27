@@ -11,6 +11,9 @@ public:
     std::shared_ptr<Texture> GetDisplayTexture() { return m_displayTexture; }
 
     float m_exposure = 1.0f;
+    int m_tonemapOperator = 0;
+    float m_saturation = 1.0f;
+    float m_hue = 0.0f;
 
 private:
     int m_width = 0;

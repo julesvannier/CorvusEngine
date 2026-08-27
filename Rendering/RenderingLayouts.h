@@ -112,5 +112,7 @@ struct SSAOConstantBuffer
 struct TonemapConstantBuffer
 {
     float Exposure = 1.0f;
-    float Padding[3];
+    int Operator = 0;
+    float Saturation = 1.0f;
+    float Hue = 0.0f;
 };

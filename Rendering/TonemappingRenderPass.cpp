@@ -28,6 +28,9 @@ void TonemappingRenderPass::Pass(std::shared_ptr<D3D12Driver> device, const Glob
 {
     TonemapConstantBuffer tonemapCbuf;
     tonemapCbuf.Exposure = m_exposure;
+    tonemapCbuf.Operator = m_tonemapOperator;
+    tonemapCbuf.Saturation = m_saturation;
+    tonemapCbuf.Hue = DirectX::XMConvertToRadians(m_hue);
 
     void* data;
     m_tonemapParamsBuffer->Map(0, 0, &data);

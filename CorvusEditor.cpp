@@ -548,6 +548,10 @@ void CorvusEditor::RenderUI(float width, float height)
         ImGui::Checkbox("Water", &m_renderWater);
         ImGui::Separator();
         ImGui::SliderFloat("Exposure", &m_tonemappingPass->m_exposure, 0.1f, 5.0f);
+        const char* tonemapOperators[] = { "ACES", "Reinhard" };
+        ImGui::Combo("Tonemap", &m_tonemappingPass->m_tonemapOperator, tonemapOperators, IM_ARRAYSIZE(tonemapOperators));
+        ImGui::SliderFloat("Saturation", &m_tonemappingPass->m_saturation, 0.0f, 2.0f);
+        ImGui::SliderFloat("Hue", &m_tonemappingPass->m_hue, 0.0f, 360.0f);
         ImGui::End();
 
         ImGui::Begin("Log");
