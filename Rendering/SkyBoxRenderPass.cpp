@@ -4,7 +4,7 @@
 
 void SkyBoxRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width, int height)
 {
-    m_textureSampler = device->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
+    m_textureSampler = device->GetLinearWrapSampler();
     
     GraphicsPipelineSpecs skyboxSpecs;
     skyboxSpecs.FormatCount = 1;
@@ -34,8 +34,8 @@ void SkyBoxRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width
 
     m_enviroMaps.SkyBox = device->LoadTextureCube(L"Assets/skymap.dds");
 
-    m_enviroMaps.DiffuseIrradianceMap = device->CreateTextureCube(128, 128, TextureFormat::RGBA8, "DiffuseIrradianceMap");
-    m_enviroMaps.PrefilterEnvMap = device->CreateTextureCube(512, 512, TextureFormat::RGBA8, "PrefilterEnvMap");
+    m_enviroMaps.DiffuseIrradianceMap = device->CreateTextureCube(128, 128, TextureFormat::RGBA8, 1, "DiffuseIrradianceMap");
+    m_enviroMaps.PrefilterEnvMap = device->CreateTextureCube(512, 512, TextureFormat::RGBA8, 5, "PrefilterEnvMap");
     m_enviroMaps.BRDFLut = device->CreateTexture(512, 512, TextureFormat::RG16Float, TextureType::Storage, "BRDFLut");
     device->CreateUnorderedAccessView(m_enviroMaps.BRDFLut);
 

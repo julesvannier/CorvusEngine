@@ -2,8 +2,8 @@
 
 void LightingRenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width, int height)
 {
-    m_textureSampler = device->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
-    m_comparisonSampler = device->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  D3D12_FILTER_MIN_MAG_MIP_LINEAR);
+    m_textureSampler = device->GetLinearWrapSampler();
+    m_comparisonSampler = device->GetShadowComparisonSampler();
 
     GraphicsPipelineSpecs dirLightSpecs;
     dirLightSpecs.FormatCount = 1;

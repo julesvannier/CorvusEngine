@@ -5,7 +5,7 @@
 
 void SSAORenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width, int height)
 {
-    m_sampler = device->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_FILTER_MAXIMUM_MIN_MAG_MIP_LINEAR);
+    m_sampler = device->GetMaxLinearWrapSampler();
     
     Shader SSAOShader;
     ShaderCompiler::CompileShader("Shaders/SSAO.hlsl", ShaderType::Compute, SSAOShader);
@@ -70,7 +70,7 @@ void SSAORenderPass::Initialize(std::shared_ptr<D3D12Driver> device, int width, 
     device->UploadTextureData(noiseImage, m_noiseTexture);
     device->FlushUploads();
 
-    m_noiseSampler = device->CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_FILTER_MIN_MAG_MIP_POINT);
+    m_noiseSampler = device->GetPointWrapSampler();
 
     OnResize(device, width, height);
 }

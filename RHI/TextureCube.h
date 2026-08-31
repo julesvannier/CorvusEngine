@@ -12,7 +12,7 @@ class TextureCube
 {
 public:
     TextureCube(std::shared_ptr<Device> device, std::shared_ptr<CommandList> cmdList, const std::wstring& filePath, Heaps& heaps);
-    TextureCube(std::shared_ptr<Device> device, std::shared_ptr<Allocator> allocator, uint32_t width, uint32_t height, TextureFormat format, Heaps& heaps, const char* name = nullptr);
+    TextureCube(std::shared_ptr<Device> device, std::shared_ptr<Allocator> allocator, uint32_t width, uint32_t height, TextureFormat format, Heaps& heaps, uint32_t mipLevels = 5, const char* name = nullptr);
     ~TextureCube();
     
     DescriptorHandle& GetSrvHandle() { return m_srv; }

@@ -48,9 +48,15 @@ public:
     void CreateRenderTargetView(std::shared_ptr<Texture> texture);
     void CreateUnorderedAccessView(std::shared_ptr<Texture> texture);
     std::shared_ptr<Texture> CreateTexture(int width, int height, TextureFormat format, TextureType type, const char* name = nullptr);
-    std::shared_ptr<Sampler> CreateSampler(D3D12_TEXTURE_ADDRESS_MODE addressMode, D3D12_FILTER filter);
+    std::shared_ptr<Sampler> CreateSampler(D3D12_TEXTURE_ADDRESS_MODE addressMode, D3D12_FILTER filter, D3D12_COMPARISON_FUNC comparisonFunc = D3D12_COMPARISON_FUNC_NEVER);
+
+    std::shared_ptr<Sampler> GetLinearWrapSampler() { return m_linearWrapSampler; }
+    std::shared_ptr<Sampler> GetMaxLinearWrapSampler() { return m_maxLinearWrapSampler; }
+    std::shared_ptr<Sampler> GetPointWrapSampler() { return m_pointWrapSampler; }
+    std::shared_ptr<Sampler> GetShadowComparisonSampler() { return m_shadowComparisonSampler; }
+
     std::shared_ptr<TextureCube> LoadTextureCube(const std::wstring& filePath);
-    std::shared_ptr<TextureCube> CreateTextureCube(uint32_t width, uint32_t height, TextureFormat format, const char* name = nullptr);
+    std::shared_ptr<TextureCube> CreateTextureCube(uint32_t width, uint32_t height, TextureFormat format, uint32_t mipLevels = 5, const char* name = nullptr);
     std::shared_ptr<CommandList> CreateGraphicsCommandList();
 
     void UploadBufferData(void* pData, uint64_t size, std::shared_ptr<Buffer> destBuffer);
@@ -105,4 +111,9 @@ private:
     std::vector<UploadCommand> m_uploadCommands;
 
     DescriptorHandle m_fontDescriptor;
+
+    std::shared_ptr<Sampler> m_linearWrapSampler;
+    std::shared_ptr<Sampler> m_maxLinearWrapSampler;
+    std::shared_ptr<Sampler> m_pointWrapSampler;
+    std::shared_ptr<Sampler> m_shadowComparisonSampler;
 };

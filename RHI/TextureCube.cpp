@@ -49,7 +49,7 @@ TextureCube::TextureCube(std::shared_ptr<Device> device, std::shared_ptr<Command
     m_resourceComPtr->SetName(filePath.c_str());
 }
 
-TextureCube::TextureCube(std::shared_ptr<Device> device, std::shared_ptr<Allocator> allocator, uint32_t width, uint32_t height, TextureFormat format, Heaps& heaps, const char* name)
+TextureCube::TextureCube(std::shared_ptr<Device> device, std::shared_ptr<Allocator> allocator, uint32_t width, uint32_t height, TextureFormat format, Heaps& heaps, uint32_t mipLevels, const char* name)
 {
     D3D12MA::ALLOCATION_DESC allocDesc = {};
     allocDesc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
@@ -60,7 +60,7 @@ TextureCube::TextureCube(std::shared_ptr<Device> device, std::shared_ptr<Allocat
     resourceDesc.Width = width;
     resourceDesc.Height = height;
     resourceDesc.DepthOrArraySize = 6;
-    resourceDesc.MipLevels = 5;
+    resourceDesc.MipLevels = mipLevels;
     resourceDesc.Format = DXGI_FORMAT(format);
     resourceDesc.SampleDesc.Count = 1;
     resourceDesc.SampleDesc.Quality = 0;
@@ -85,11 +85,11 @@ TextureCube::TextureCube(std::shared_ptr<Device> device, std::shared_ptr<Allocat
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
     srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-    srvDesc.TextureCube.MipLevels = 5;
+    srvDesc.TextureCube.MipLevels = mipLevels;
     srvDesc.Format = (DXGI_FORMAT)format;
     device->GetDevice()->CreateShaderResourceView(m_resource.Resource, &srvDesc, m_srv.CPU);
 
-    for(int i = 0; i < 5; i++)
+    for(uint32_t i = 0; i < mipLevels; i++)
     {
         m_uavs[i] = shaderHeap->Allocate();
 

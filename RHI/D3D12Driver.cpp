@@ -18,6 +18,11 @@ D3D12Driver::D3D12Driver(HWND hwnd) : m_frameIndex(0)
     m_allocator = std::make_shared<Allocator>(m_device);
     m_swapChain = std::make_shared<SwapChain>(m_device, m_directCommandQueue, m_heaps.RtvHeap, hwnd);
 
+    m_linearWrapSampler = CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_FILTER_MIN_MAG_MIP_LINEAR);
+    m_maxLinearWrapSampler = CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_FILTER_MAXIMUM_MIN_MAG_MIP_LINEAR);
+    m_pointWrapSampler = CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_FILTER_MIN_MAG_MIP_POINT);
+    m_shadowComparisonSampler = CreateSampler(D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR, D3D12_COMPARISON_FUNC_LESS_EQUAL);
+
     LOG(Debug, "Driver Initialization Completed");
 
     for(int i = 0; i < FRAMES_IN_FLIGHT; i++)
@@ -242,9 +247,9 @@ std::shared_ptr<Texture> D3D12Driver::CreateTexture(int width, int height, Textu
     return std::make_shared<Texture>(m_device, m_allocator, width, height, format, type, name);
 }
 
-std::shared_ptr<Sampler> D3D12Driver::CreateSampler(D3D12_TEXTURE_ADDRESS_MODE addressMode, D3D12_FILTER filter)
+std::shared_ptr<Sampler> D3D12Driver::CreateSampler(D3D12_TEXTURE_ADDRESS_MODE addressMode, D3D12_FILTER filter, D3D12_COMPARISON_FUNC comparisonFunc)
 {
-    return std::make_shared<Sampler>(m_device, m_heaps.SamplerHeap, addressMode, filter);
+    return std::make_shared<Sampler>(m_device, m_heaps.SamplerHeap, addressMode, filter, comparisonFunc);
 }
 
 std::shared_ptr<TextureCube> D3D12Driver::LoadTextureCube(const std::wstring& filePath)
@@ -261,9 +266,9 @@ std::shared_ptr<TextureCube> D3D12Driver::LoadTextureCube(const std::wstring& fi
     return TexCube;
 }
 
-std::shared_ptr<TextureCube> D3D12Driver::CreateTextureCube(uint32_t width, uint32_t height, TextureFormat format, const char* name)
+std::shared_ptr<TextureCube> D3D12Driver::CreateTextureCube(uint32_t width, uint32_t height, TextureFormat format, uint32_t mipLevels, const char* name)
 {
-    return std::make_shared<TextureCube>(m_device, m_allocator, width, height, format, m_heaps, name);
+    return std::make_shared<TextureCube>(m_device, m_allocator, width, height, format, m_heaps, mipLevels, name);
 }
 
 std::shared_ptr<CommandList> D3D12Driver::CreateGraphicsCommandList()
